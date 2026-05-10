@@ -1,53 +1,33 @@
 "use client";
-const img1 = "/about/1.jpg";
-const img2 = "/about/2.jpg";
-const img3 = "/about/3.jpg";
-const img4 = "/about/4.jpg";
-const img5 = "/about/5.jpg";
-const img6 = "/about/6.jpg";
-const img7 = "/about/1.jpg";
-const img8 = "/about/2.jpg";
-const img9 = "/about/3.jpg";
-
+const img1 = "/final_home/about/pexels-kiran-kr-936377-29481959.jpg";
+const img2 = "/final_home/about/pexels-kuldeep-rajora-207144812-11888576.jpg";
+const img3 = "/final_home/about/pexels-ezequielfiliberto-6891416.jpg";
+const img4 = "/final_home/about/pexels-lara-jameson-8886968.jpg";
+const img5 = "/final_home/about/pexels-smit-prajapati-130663561-30525536.jpg";
+const img6 = "/final_home/about/pexels-sufail-pc-1776010-15164332.jpg";
+const img7 = "/final_home/about/pexels-tufan-kuzucuoglu-1677261930-31403782.jpg";
 
 import { useEffect, useState } from "react";
 
-const carouselImages = [img5, img6, img7, img8, img9];
+const carouselImages = [img2, img3, img4, img5, img6, img7];
 
 export default function AboutUs() {
     // ── Carousel state ──────────────────────────────────────────────────────────
     const [current, setCurrent] = useState(0);
-    const [visible, setVisible] = useState(true);
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => setIsHovered(true);
+    const handleMouseLeave = () => setIsHovered(false);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            // Fade out
-            setVisible(false);
-            setTimeout(() => {
-                setCurrent((prev) => (prev + 1) % carouselImages.length);
-                // Fade in
-                setVisible(true);
-            }, 400); // 400 ms cross-fade window
+            setCurrent((prev) => (prev + 1) % carouselImages.length);
         }, 1500);
-
         return () => clearInterval(interval);
     }, []);
 
     return (
         <div className="min-h-screen bg-white font-sans">
-            {/* ── Navbar ──────────────────────────────────────────────────────────── */}
-            <nav className="flex justify-center pt-5 pb-4 px-6">
-                <div className="flex items-center gap-4 bg-[#1a3c3c] text-white rounded-full px-7 py-3 shadow-lg">
-                    <span className="text-xl font-bold tracking-tight">Traavellio</span>
-                    <button
-                        aria-label="Menu"
-                        className="flex flex-col gap-[5px] ml-2 group"
-                    >
-                        <span className="block w-5 h-[2px] bg-white rounded-full" />
-                        <span className="block w-5 h-[2px] bg-white rounded-full" />
-                    </button>
-                </div>
-            </nav>
 
             {/* ── Main grid ───────────────────────────────────────────────────────── */}
             <main className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-6 items-start">
@@ -66,44 +46,81 @@ export default function AboutUs() {
                             <line x1="12" y1="8" x2="12" y2="8.5" strokeLinecap="round" />
                             <line x1="12" y1="11" x2="12" y2="16" strokeLinecap="round" />
                         </svg>
-                        <span className="tracking-wide">About Us</span>
+                        <span className="tracking-wide">Why YouGO?</span>
                     </div>
 
                     {/* Heading */}
                     <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0d2b2b] leading-tight">
-                        Meaningful Travel
+                        Travel Feels
                         <br />
-                        Experiences,
+                        Better With
                         <br />
-                        Thoughtfully Crafted
+                        The Right People
                     </h1>
 
                     {/* Body */}
                     <p className="text-gray-500 text-base leading-relaxed max-w-sm">
-                        We are passionate travel experts creating unforgettable journeys
-                        beyond sightseeing. Every itinerary combines comfort, discovery,
-                        and meaningful experiences.
+                        YouGO helps travelers discover meaningful trips, connect with trusted people, and explore without depending on flaky plans or random strangers.
+                        Whether you’re solo, spontaneous, or simply tired of cancelled trips — your next journey starts here.
                     </p>
 
                     {/* CTA button */}
-                    <div className="flex items-center gap-0 w-fit mt-2">
-                        <button className="bg-[#1a3c3c] text-white text-sm font-semibold px-6 py-3 rounded-l-full hover:bg-[#153030] transition-colors">
+                    <div
+                        className="hero2-btn flex items-center cursor-pointer mt-2 overflow-hidden border border-[#1a3c3c] bg-transparent"
+                        style={{ borderRadius: "20px", width: "210px", height: "54px", fontFamily: 'Funnel Display, sans-serif', fontWeight: 500, fontSize: "1.1rem" }}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        {/* Left — Get Template */}
+                        <div
+                            className="left-div bg-[#1a3c3c] flex items-center justify-center text-white font-semibold text-base flex-shrink-0 h-full"
+                            style={{
+                                width: "75%",
+                                borderRadius: isHovered ? "20px 0 0 20px" : "20px",
+                                marginLeft: "-1px",
+                                transition: "border-radius 0.3s ease",
+                            }}
+                        >
                             Know More
-                        </button>
-                        <button className="bg-[#1a3c3c] text-white w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#153030] transition-colors ml-1">
-                            <svg
-                                className="w-4 h-4"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
+                        </div>
+
+                        {/* Right — Arrow */}
+                        <div
+                            className="right-wrapper flex items-center justify-center flex-shrink-0 h-full"
+                            style={{
+                                width: "25%",
+                                padding: isHovered ? "2px" : "2px 2px 2px 7px",
+                                transition: "padding 0.3s ease, margin 0.3s ease",
+                            }}
+                        >
+                            <div
+                                className="right-div bg-[#1a3c3c] flex items-center justify-center w-full h-full"
+                                style={{
+                                    borderRadius: isHovered ? "0 20px 20px 0" : "20px",
+                                    transition: "border-radius 0.3s ease",
+                                }}
                             >
-                                <line x1="7" y1="17" x2="17" y2="7" />
-                                <polyline points="7 7 17 7 17 17" />
-                            </svg>
-                        </button>
+                                <svg
+                                    className="arrow-svg"
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    style={{
+                                        transition: "transform 0.3s ease",
+                                        transform: isHovered ? "rotate(45deg)" : "rotate(0deg)"
+                                    }}
+                                >
+                                    <path
+                                        d="M2 12L12 2M12 2H5M12 2V9"
+                                        stroke="#fff"
+                                        strokeWidth="2.2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Bottom image (asset 1) */}
@@ -113,22 +130,6 @@ export default function AboutUs() {
                             alt="Travel scene 1"
                             className="w-full h-full object-cover"
                         />
-                    </div>
-
-                    {/* Optional thumbnail strip for assets 2,3,4 */}
-                    <div className="hidden sm:grid grid-cols-3 gap-3 mt-1">
-                        {[img2, img3, img4].map((src, i) => (
-                            <div
-                                key={i}
-                                className="rounded-xl overflow-hidden aspect-square"
-                            >
-                                <img
-                                    src={src}
-                                    alt={`Travel scene ${i + 2}`}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                />
-                            </div>
-                        ))}
                     </div>
                 </div>
 
@@ -141,11 +142,7 @@ export default function AboutUs() {
                                 key={idx}
                                 src={src}
                                 alt={`Destination ${idx + 5}`}
-                                className="absolute inset-0 w-full h-full object-cover"
-                                style={{
-                                    opacity: idx === current ? (visible ? 1 : 0) : 0,
-                                    transition: "opacity 0.4s ease-in-out",
-                                }}
+                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${idx === current ? "opacity-100" : "opacity-0"}`}
                             />
                         ))}
 
@@ -154,13 +151,7 @@ export default function AboutUs() {
                             {carouselImages.map((_, idx) => (
                                 <button
                                     key={idx}
-                                    onClick={() => {
-                                        setVisible(false);
-                                        setTimeout(() => {
-                                            setCurrent(idx);
-                                            setVisible(true);
-                                        }, 300);
-                                    }}
+                                    onClick={() => setCurrent(idx)}
                                     aria-label={`Go to slide ${idx + 1}`}
                                     className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === current
                                         ? "bg-white scale-125"

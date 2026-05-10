@@ -1,42 +1,31 @@
 "use client";
-// ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "/explore/1.jpg";// testimonial 1 – background
-const img2 = "/explore/1.jpg";// testimonial 2 – background
-const img3 = "/explore/1.jpg";// testimonial 3 – background
-const img4 = "/explore/1.jpg";// testimonial 1 – avatar
-const img5 = "/explore/1.jpg";
-const img6 = "/explore/1.jpg";
-const img7 = "/explore/1.jpg";
-const img8 = "/explore/1.jpg";
-const img9 = "/explore/1.jpg";
-// ──────────────────────────────────────────────────────────────────────────────
 
 import { useState } from "react";
 
 const testimonials = [
     {
-        bg: img1,
-        avatar: img4,
+        bg: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg",
+        avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg",
         stars: 5,
-        quote: "Traveling with this team completely changed how I see group travel. Everything was thoughtfully planned",
-        name: "Emily Carter",
-        role: "Solo Traveler",
+        quote: "My Goa trip almost got cancelled because my friends backed out last minute. I posted on YouGO, met amazing people, and ended up having one of the best trips of my life.",
+        name: "— Aayushi Sharma, Delhi",
+        role: "",
     },
     {
-        bg: img2,
-        avatar: img5,
+        bg: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg",
+        avatar: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg",
         stars: 5,
-        quote: "From the moment we landed, every detail was taken care of. A truly magical experience I will never forget.",
-        name: "James & Lena Park",
-        role: "Couple Travelers",
+        quote: "I had no idea where to travel or how to plan anything. The AI itinerary literally planned my entire Himachal trip in seconds.",
+        name: "— Rohan Mehta, Mumbai",
+        role: "",
     },
     {
-        bg: img3,
-        avatar: img6,
+        bg: "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg",
+        avatar: "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg",
         stars: 5,
-        quote: "The cultural immersion was unlike anything we had ever experienced. Our guide was knowledgeable and warm.",
-        name: "Marco Rivera",
-        role: "Adventure Traveler",
+        quote: "I usually avoid traveling with random people, but YouGO made it feel safe and comfortable. Met travelers who genuinely matched my vibe.",
+        name: "— Sneha Kapoor, Bangalore",
+        role: "",
     },
 ];
 
@@ -107,10 +96,10 @@ export default function Testimonials() {
                         <rect x="3" y="3" width="18" height="14" rx="2" />
                         <path d="M3 17l4-4h13" />
                     </svg>
-                    <span>Testimonials</span>
+                    <span>Community Stories</span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0d2b2b] leading-tight max-w-2xl">
-                    Words From Those Who<br />Traveled With Us
+                    Real Trips.<br />Real People.<br />Real Memories.
                 </h2>
             </div>
 
@@ -168,8 +157,8 @@ export default function Testimonials() {
                             aria-label={`View testimonial from ${name}`}
                             disabled={busy}
                             className={`rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 focus:outline-none ${i === activeIdx
-                                    ? "w-16 h-16 opacity-100 scale-110"
-                                    : "w-12 h-12 opacity-50 hover:opacity-80 hover:scale-105"
+                                ? "w-16 h-16 opacity-100 scale-110"
+                                : "w-12 h-12 opacity-50 hover:opacity-80 hover:scale-105"
                                 }`}
                             style={
                                 i === activeIdx

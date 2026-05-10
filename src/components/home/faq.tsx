@@ -4,36 +4,36 @@ import { useState } from "react";
 
 const faqs = [
     {
-        q: "What type of trips do you offer?",
-        a: "We offer a wide range of trips including adventure travel, cultural tours, luxury escapes, solo journeys, and family-friendly packages across 50+ destinations worldwide.",
+        q: "Is YouGO safe for meeting new travelers?",
+        a: "Yes. Profiles are verified, trip requests are controlled, and you decide who joins your journey. You can also chat and connect before accepting anyone.",
     },
     {
-        q: "Are your trips suitable for solo travelers?",
-        a: "Absolutely! Many of our packages are specifically designed for solo travelers, with group options to meet like-minded explorers along the way.",
+        q: "Can I use YouGO if I’m traveling solo?",
+        a: "Absolutely. YouGO is perfect for solo travelers who want to explore safely, meet like-minded people, or simply find travel companions who match their vibe.",
     },
     {
-        q: "Do you handle flights and visas?",
-        a: "Yes, we provide full assistance with flight bookings and visa documentation. Our team guides you through every step of the process.",
+        q: "How does the AI trip planner work?",
+        a: "Just enter your destination, budget, travel style, and number of days. Our AI instantly creates a personalized day-wise itinerary for you.",
     },
     {
-        q: "Will there be on-ground support during the trip?",
-        a: "Every trip includes a dedicated local guide and 24/7 on-ground support to ensure your journey is smooth and memorable.",
+        q: "What if my friends cancel the trip?",
+        a: "That’s exactly why YouGO exists. You can post your trip publicly and connect with verified travelers who are interested in joining.",
     },
     {
-        q: "How do I book a trip?",
-        a: "Simply browse our packages, choose your destination, and click 'Book a Trip'. Our team will reach out within 24 hours to confirm details and next steps.",
+        q: "Can I chat with travelers before joining a trip?",
+        a: "Yes. You can message, discuss plans, understand travel vibes, and decide compatibility before accepting or joining any trip.",
     },
     {
-        q: "What is included in the trip cost?",
-        a: "Most packages include accommodation, guided tours, select meals, and airport transfers. Specific inclusions are listed on each package page.",
+        q: "What kind of trips can I find on YouGO?",
+        a: "Everything from backpacking adventures and road trips to café hopping, workations, trekking, luxury escapes, and weekend getaways.",
     },
     {
-        q: "What payment options are available?",
-        a: "We accept all major credit cards, bank transfers, and offer flexible installment plans so you can secure your trip without paying everything upfront.",
+        q: "Do I need to know my destination before using YouGO?",
+        a: "Not at all. You can explore curated destinations, trending trips, hidden gems, and AI-generated travel ideas based on your vibe.",
     },
     {
-        q: "Is travel insurance mandatory?",
-        a: "While not mandatory, we strongly recommend travel insurance for all our trips. We can help you find the right plan that suits your itinerary and budget.",
+        q: "Is YouGO only for group travel?",
+        a: "No. YouGO works for solo travelers, couples, friends, and groups. Whether you want company or complete independence — the platform adapts to you.",
     },
 ];
 

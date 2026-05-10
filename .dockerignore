@@ -1,3 +1,25 @@
+# ── Build artefacts ───────────────────────────────────────────────────────────
 node_modules
 .next
+out
+
+# ── Source control ─────────────────────────────────────────────────────────────
 .git
+.gitignore
+.github
+
+# ── Local dev / editor ────────────────────────────────────────────────────────
+.env*.local
+*.env
+.vscode
+.idea
+
+# ── Docs & Meta (not needed in container) ────────────────────────────────────
+docs
+README.md
+*.md
+LICENSE
+
+# ── OS artefacts ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

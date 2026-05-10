@@ -1,38 +1,33 @@
 // ─── Asset Imports ───────────────────────────────────────────────────────────
-const img1 = "/explore/1.jpg";
-const img2 = "/explore/1.jpg";
-const img3 = "/explore/1.jpg";
-const img4 = "/explore/1.jpg";
-const img5 = "/explore/1.jpg";
-const img6 = "/explore/1.jpg";
-const img7 = "/explore/1.jpg";
-const img8 = "/explore/1.jpg";
-const img9 = "/explore/1.jpg";
+const img1 = "/final_home/explore/1.png";
+const img2 = "/final_home/explore/2.png";
+const img3 = "/final_home/explore/3.png";
+const img4 = "/final_home/explore/4.png";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const experiences = [
     {
         img: img1,
-        title: "Travel to the Future",
-        desc: "A city of luxury and innovation, where tomorrow comes alive.",
-        imageFirst: true, // image on top, text below
+        title: "You Have The Plan. But Not The People.",
+        desc: "Post your trip idea, find trusted travelers, match vibes, and make the journey happen.",
+        imageFirst: true,
     },
     {
         img: img2,
-        title: "Travel Into Nature",
-        desc: "Stunning landscapes and pure alpine beauty of the nature.",
-        imageFirst: false, // text on top, image below
+        title: "You Have Friends. But No Actual Plan.",
+        desc: "Let AI build your personalized itinerary in seconds — budget, places, food, stays, everything.",
+        imageFirst: false,
     },
     {
         img: img3,
-        title: "Travel Through Culture",
-        desc: "A blend of traditions, colors, heritage and spices.",
+        title: "You Want To Travel. But Don’t Know Where To Start.",
+        desc: "Discover curated destinations, hidden gems, verified stays, and travel ideas built for your vibe.",
         imageFirst: true,
     },
     {
         img: img4,
-        title: "Travel Back in Time",
-        desc: "Explore ancient wonders, monuments & stories in stone.",
+        title: "Your Friends Cancelled. Again.",
+        desc: "Stop waiting for \"next month pakka\". Travel with people who actually want to go.",
         imageFirst: false,
     },
 ];
@@ -57,12 +52,13 @@ export default function ExperienceSection() {
                         <path d="M22 2L11 13" />
                         <path d="M22 2L15 22l-4-9-9-4 19-7z" />
                     </svg>
-                    <span>Explore by Experience</span>
+                    <span>Explore by Situation</span>
                 </div>
 
                 {/* Main heading */}
                 <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0d2b2b] leading-tight max-w-2xl">
-                    Experience Diverse Worlds On One Planet
+                    No Matter What Situation You’re In…
+                    YouGO Has Your Back.
                 </h2>
             </div>
 
@@ -108,28 +104,54 @@ export default function ExperienceSection() {
             </div>
 
             {/* ── Footer row ──────────────────────────────────────────────────────── */}
-            <div className="max-w-[1400px] mx-auto mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6">
-                <p className="text-[#0d2b2b] text-sm font-medium">
-                    Explore more journeys waiting for you
-                </p>
-                <div className="flex items-center gap-1">
-                    <button className="bg-[#1a3c3c] text-white text-sm font-semibold px-7 py-3 rounded-l-full hover:bg-[#153030] transition-colors">
-                        View Packages
-                    </button>
-                    <button className="bg-[#1a3c3c] text-white w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#153030] transition-colors">
-                        <svg
-                            className="w-4 h-4"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+            <div className="max-w-[1400px] mx-auto mt-10 flex flex-col items-center justify-center gap-4 border-t border-gray-200 pt-6">
+                <div
+                    className="hero2-btn flex items-center cursor-pointer mt-2 overflow-hidden border border-white bg-transparent mx-auto"
+                    style={{ borderRadius: "20px", width: "210px", height: "54px", fontFamily: 'Funnel Display, sans-serif', fontWeight: 500, fontSize: "1.1rem" }}
+                >
+                    <div
+                        className="left-div bg-white flex items-center justify-center text-black font-semibold text-base flex-shrink-0 h-full"
+                        style={{
+                            width: "75%",
+                            borderRadius: "20px 0 0 20px",
+                            marginLeft: "-1px",
+                            transition: "border-radius 0.3s ease",
+                        }}
+                    >
+                        Start Your Journey
+                    </div>
+                    <div
+                        className="right-wrapper flex items-center justify-center flex-shrink-0 h-full"
+                        style={{
+                            width: "25%",
+                            padding: "2px 2px 2px 7px",
+                            transition: "padding 0.3s ease, margin 0.3s ease",
+                        }}
+                    >
+                        <div
+                            className="right-div bg-white flex items-center justify-center w-full h-full"
+                            style={{
+                                borderRadius: "0 20px 20px 0",
+                                transition: "border-radius 0.3s ease",
+                            }}
                         >
-                            <line x1="7" y1="17" x2="17" y2="7" />
-                            <polyline points="7 7 17 7 17 17" />
-                        </svg>
-                    </button>
+                            <svg
+                                className="arrow-svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 14 14"
+                                fill="none"
+                            >
+                                <path
+                                    d="M2 12L12 2M12 2H5M12 2V9"
+                                    stroke="#000"
+                                    strokeWidth="2.2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

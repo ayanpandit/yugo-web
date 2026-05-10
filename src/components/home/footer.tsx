@@ -1,29 +1,44 @@
+"use client";
+
 // ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "/footer/1.jpg";
-const img2 = "/footer/2.jpg";
-const img3 = "/footer/3.jpg";
-const img4 = "/footer/4.jpg";
-const img5 = "/footer/5.jpg";
-const img6 = "/footer/6.jpg";
-const img7 = "/footer/7.jpg";
-const img8 = "/footer/8.jpg";
-const img9 = "/footer/9.jpg";
+const img1 = "final_home/footer/pexels-jean-paul-wettstein-677916508-32514307.jpg";
 // ──────────────────────────────────────────────────────────────────────────────
 
 const services = [
-    { icon: "🌿", label: "Luxury & Budget Travel" },
-    { icon: "🛂", label: "Visa Assistance" },
-    { icon: "🏨", label: "Hotel Bookings" },
-    { icon: "🚗", label: "Transfers & Rentals" },
-    { icon: "✈️", label: "Custom Tours" },
-    { icon: "🌍", label: "Worldwide Destinations" },
+    { icon: "👥", label: "Find Travel Partners" },
+    { icon: "🧠", label: "AI Trip Planner" },
+    { icon: "🎒", label: "Backpacking Trips" },
+    { icon: "✈️", label: "Solo Travel" },
+    { icon: "🔒", label: "Verified Travelers" },
+    { icon: "🌍", label: "Hidden Gems" },
+    { icon: "☕", label: "Café Hopping" },
+    { icon: "🏕", label: "Adventure Trips" },
+    { icon: "🚗", label: "Roadtrip Vibes" },
+    { icon: "📍", label: "Curated Destinations" },
+    { icon: "💬", label: "Match Your Vibe" },
+    { icon: "🎉", label: "Group Adventures" },
+    { icon: "🌄", label: "Weekend Escapes" },
+    { icon: "📸", label: "Travel Stories" },
 ];
 
 const footerLinks = {
-    Pages: ["Home", "About", "Tours", "Book a Trip"],
-    Documentation: ["Blogs", "Privacy Policy", "Terms & Conditions"],
-    "Other Pages": ["404"],
+    Pages: [
+        { name: "Home", href: "/" },
+        { name: "About", href: "/about" },
+        { name: "Tours", href: "/tours" },
+        { name: "Book a Trip", href: "/book-a-trip" }
+    ],
+    Documentation: [
+        { name: "Blogs", href: "/blogs" },
+        { name: "Privacy Policy", href: "/privacy-policy" },
+        { name: "Terms & Conditions", href: "/terms-conditions" }
+    ],
+    "Other Pages": [
+        { name: "404", href: "/not-found-example" }
+    ],
 };
+
+import Link from "next/link";
 
 const socials = [
     {
@@ -65,7 +80,14 @@ const socials = [
     },
 ];
 
+import { useState } from "react";
+
 export default function Footer() {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => setIsHovered(true);
+    const handleMouseLeave = () => setIsHovered(false);
+
     return (
         <footer className="w-full font-sans">
 
@@ -78,31 +100,72 @@ export default function Footer() {
       `}</style>
 
             {/* ── CTA hero ────────────────────────────────────────────────────────── */}
-            <div className="relative w-full overflow-hidden" style={{ minHeight: "520px" }}>
+            <div className="relative w-full overflow-hidden min-h-screen" style={{ minHeight: "100vh" }}>
                 {/* Background */}
                 <img src={img1} alt="" className="absolute inset-0 w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/60" />
 
                 {/* Content */}
-                <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-20 pb-36"
-                    style={{ minHeight: "520px" }}>
+                <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-20 pb-36 min-h-screen" style={{ minHeight: "100vh" }}>
                     <h2 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight max-w-xl">
                         Turn Your Travel<br />Dreams Into Reality
                     </h2>
                     <p className="text-white/65 text-base mt-4 max-w-md">
                         From the first idea to the final detail, we design journeys you'll remember forever.
                     </p>
-                    <div className="flex items-center gap-1 mt-8">
-                        <button className="bg-white text-[#0d2b2b] font-semibold text-sm px-7 py-3 rounded-l-full hover:bg-gray-100 transition-colors">
+                    <div
+                        className="hero2-btn flex items-center cursor-pointer mt-8 overflow-hidden border border-white bg-transparent mx-auto"
+                        style={{ borderRadius: "20px", width: "210px", height: "54px", fontFamily: 'Funnel Display, sans-serif', fontWeight: 500, fontSize: "1.1rem" }}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        <div
+                            className="left-div bg-white flex items-center justify-center text-black font-semibold text-base flex-shrink-0 h-full"
+                            style={{
+                                width: "75%",
+                                borderRadius: isHovered ? "20px 0 0 20px" : "20px",
+                                marginLeft: "-1px",
+                                transition: "border-radius 0.3s ease",
+                            }}
+                        >
                             Book a trip
-                        </button>
-                        <button className="bg-white text-[#0d2b2b] w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="7" y1="17" x2="17" y2="7" />
-                                <polyline points="7 7 17 7 17 17" />
-                            </svg>
-                        </button>
+                        </div>
+                        <div
+                            className="right-wrapper flex items-center justify-center flex-shrink-0 h-full"
+                            style={{
+                                width: "25%",
+                                padding: isHovered ? "2px" : "2px 2px 2px 7px",
+                                transition: "padding 0.3s ease, margin 0.3s ease",
+                            }}
+                        >
+                            <div
+                                className="right-div bg-white flex items-center justify-center w-full h-full"
+                                style={{
+                                    borderRadius: isHovered ? "0 20px 20px 0" : "20px",
+                                    transition: "border-radius 0.3s ease",
+                                }}
+                            >
+                                <svg
+                                    className="arrow-svg"
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    style={{
+                                        transition: "transform 0.3s ease",
+                                        transform: isHovered ? "rotate(45deg)" : "rotate(0deg)"
+                                    }}
+                                >
+                                    <path
+                                        d="M2 12L12 2M12 2H5M12 2V9"
+                                        stroke="#000"
+                                        strokeWidth="2.2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -130,10 +193,10 @@ export default function Footer() {
                             <h4 className="text-white/50 text-xs font-semibold tracking-widest uppercase">{title}</h4>
                             <ul className="flex flex-col gap-3">
                                 {links.map((link) => (
-                                    <li key={link}>
-                                        <a href="#" className="text-white text-sm font-medium hover:text-white/60 transition-colors">
-                                            {link}
-                                        </a>
+                                    <li key={link.name}>
+                                        <Link href={link.href} className="text-white text-sm font-medium hover:text-white/60 transition-colors">
+                                            {link.name}
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>

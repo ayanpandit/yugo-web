@@ -1,31 +1,39 @@
+"use client";
+
 // ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "/blogs/1.jpg";
-const img2 = "/blogs/2.jpg";
-const img3 = "/blogs/3.jpg";
-const img4 = "/blogs/4.jpg";
-const img5 = "/blogs/5.jpg";
-const img6 = "/blogs/6.jpg";
-const img7 = "/blogs/7.jpg";
-const img8 = "/blogs/8.jpg";
-const img9 = "/blogs/9.jpg";
+const img1 = "final_home/blogs/1.jpg";
+const img2 = "final_home/blogs/2.jpg";
+const img3 = "final_home/blogs/3.jpg";
+const img4 = "final_home/blogs/4.jpg";
+const img5 = "final_home/blogs/5.jpg";
+const img6 = "final_home/blogs/6.jpg";
+const img7 = "final_home/blogs/7.jpg";
+const img8 = "final_home/blogs/8.jpg";
+const img9 = "final_home/blogs/9.jpg";
 // ──────────────────────────────────────────────────────────────────────────────
 
 const blogs = [
     {
-        img: img1,
+        img: "https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg",
         date: "25 Feb 2026",
-        title: "Discovering Island Life Beyond Luxury",
+        title: "How To Plan An International Trip On A Budget From India",
     },
     {
-        img: img2,
+        img: "https://images.pexels.com/photos/3769138/pexels-photo-3769138.jpeg",
         date: "10 Mar 2026",
-        title: "Experiencing Europe Beyond Tourist Routes",
+        title: "What To Do When Your Friends Cancel The Trip Last Minute",
     },
 ];
 
+import { useState } from "react";
+
 export default function Blogs() {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => setIsHovered(true);
+    const handleMouseLeave = () => setIsHovered(false);
     return (
-        <section className="bg-white w-full px-6 md:px-12 lg:px-16 py-16 font-sans">
+        <section id="blogs" className="bg-[#fcfafa] w-full px-6 md:px-12 lg:px-16 py-16 font-sans">
 
             {/* ── Header ──────────────────────────────────────────────────────────── */}
             <div className="flex flex-col items-center text-center gap-3 mb-12">
@@ -34,11 +42,14 @@ export default function Blogs() {
                         strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
-                    <span>Blogs</span>
+                    <span>Travel Stories</span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0d2b2b] leading-tight max-w-2xl">
-                    Inspiration And Tips For Your<br />Next Travel Journey
+                    Travel Stories & Ideas<br />For Your Next Escape
                 </h2>
+                <p className="text-gray-500 text-base max-w-2xl mt-2">
+                    Real experiences, smart travel tips, hidden gems, and inspiration for your next journey.
+                </p>
             </div>
 
             {/* ── Blog cards ──────────────────────────────────────────────────────── */}
@@ -77,19 +88,61 @@ export default function Blogs() {
             {/* ── Footer row ──────────────────────────────────────────────────────── */}
             <div className="max-w-[1300px] mx-auto mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6">
                 <p className="text-[#0d2b2b] text-sm font-medium">
-                    Explor stories that inspire travel
+                    Explore stories that make you want to pack instantly.
                 </p>
-                <div className="flex items-center gap-1">
-                    <button className="bg-[#1a3c3c] text-white text-sm font-semibold px-7 py-3 rounded-l-full hover:bg-[#153030] transition-colors">
-                        View All
-                    </button>
-                    <button className="bg-[#1a3c3c] text-white w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#153030] transition-colors">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="7" y1="17" x2="17" y2="7" />
-                            <polyline points="7 7 17 7 17 17" />
-                        </svg>
-                    </button>
+                <div
+                    className="hero2-btn flex items-center cursor-pointer overflow-hidden border border-[#1a3c3c] bg-transparent"
+                    style={{ borderRadius: "20px", width: "210px", height: "54px", fontFamily: 'Funnel Display, sans-serif', fontWeight: 500, fontSize: "1.1rem" }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <div
+                        className="left-div bg-[#1a3c3c] flex items-center justify-center text-white font-semibold text-base flex-shrink-0 h-full"
+                        style={{
+                            width: "75%",
+                            borderRadius: isHovered ? "20px 0 0 20px" : "20px",
+                            marginLeft: "-1px",
+                            transition: "border-radius 0.3s ease",
+                        }}
+                    >
+                        Explore All Stories
+                    </div>
+                    <div
+                        className="right-wrapper flex items-center justify-center flex-shrink-0 h-full"
+                        style={{
+                            width: "25%",
+                            padding: isHovered ? "2px" : "2px 2px 2px 7px",
+                            transition: "padding 0.3s ease, margin 0.3s ease",
+                        }}
+                    >
+                        <div
+                            className="right-div bg-[#1a3c3c] flex items-center justify-center w-full h-full"
+                            style={{
+                                borderRadius: isHovered ? "0 20px 20px 0" : "20px",
+                                transition: "border-radius 0.3s ease",
+                            }}
+                        >
+                            <svg
+                                className="arrow-svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 14 14"
+                                fill="none"
+                                style={{
+                                    transition: "transform 0.3s ease",
+                                    transform: isHovered ? "rotate(45deg)" : "rotate(0deg)"
+                                }}
+                            >
+                                <path
+                                    d="M2 12L12 2M12 2H5M12 2V9"
+                                    stroke="#fff"
+                                    strokeWidth="2.2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

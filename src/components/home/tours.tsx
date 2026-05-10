@@ -1,93 +1,87 @@
-// ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "/tours/1.jpg";
-const img2 = "/tours/2.jpg";
-const img3 = "/tours/3.jpg";
-const img4 = "/tours/4.jpg";
-const img5 = "/tours/5.jpg";
-const img6 = "/tours/6.jpg";
-const img7 = "/tours/7.jpg";
-const img8 = "/tours/8.jpg";
-const img9 = "/tours/9.jpg";
-// ──────────────────────────────────────────────────────────────────────────────
+"use client";
 
 const packages = [
     {
-        img: img1,
-        duration: "8 Days / 7 Nights",
-        title: "Morocco Desert Journey",
-        price: "1,600",
+        img: "https://images.pexels.com/photos/15447033/pexels-photo-15447033.jpeg",
+        duration: "6 Days / 5 Nights",
+        title: "Vang Vieng, Laos",
+        price: "From ₹53,700 / Person",
     },
     {
-        img: img2,
+        img: "https://images.pexels.com/photos/18381857/pexels-photo-18381857.jpeg",
+        duration: "6 Days / 5 Nights",
+        title: "Tbilisi, Georgia",
+        price: "From ₹55,000 / Person",
+    },
+    {
+        img: "https://images.pexels.com/photos/30459671/pexels-photo-30459671.jpeg",
         duration: "7 Days / 6 Nights",
-        title: "Italy Classic",
-        price: "1,400",
+        title: "Albanian Riviera, Albania",
+        price: "From ₹91,500 / Person",
     },
     {
-        img: img3,
+        img: "https://images.pexels.com/photos/4619987/pexels-photo-4619987.jpeg",
         duration: "8 Days / 7 Nights",
-        title: "Africa Experience",
-        price: "2,200",
-    },
-    {
-        img: img4,
-        duration: "7 Days / 6 Nights",
-        title: "Japan Spring",
-        price: "1,200",
+        title: "Bacalar, Mexico",
+        price: "From ₹133,000 / Person",
     },
 ];
 
+import { useState } from "react";
+
 export default function TourPackages() {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => setIsHovered(true);
+    const handleMouseLeave = () => setIsHovered(false);
     return (
-        <section className="bg-white w-full px-6 md:px-12 lg:px-16 py-14 font-sans">
+        <section id="tours" className="bg-white w-full px-6 md:px-12 lg:px-16 py-14 font-sans">
 
             {/* ── Header ──────────────────────────────────────────────────────────── */}
             <div className="flex flex-col items-center text-center mb-12 gap-3">
-
                 {/* Label */}
                 <div className="flex items-center gap-2 text-[#1a3c3c] text-sm font-semibold tracking-wide">
-                    {/* Mountain icon */}
                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 20 L8 10 L12 16 L16 8 L21 20 Z" />
                     </svg>
-                    <span>Handcrafted Tour Packages</span>
+                    <span>Budget Friendly International Trips</span>
                 </div>
-
                 {/* Heading */}
                 <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0d2b2b] leading-tight max-w-2xl">
-                    Journeys Designed For Every<br />Travel Style
+                    Explore stunning international destinations without spending a fortune.
                 </h2>
+                {/* Small Text */}
+                <p className="text-gray-500 text-base max-w-2xl mt-2">
+                    Real trips, realistic budgets, unforgettable experiences.
+                </p>
             </div>
 
             {/* ── Cards ───────────────────────────────────────────────────────────── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1400px] mx-auto">
                 {packages.map(({ img, duration, title, price }, i) => (
                     <div key={i} className="flex flex-col gap-4 group cursor-pointer">
-
-                        {/* Image + badge */}
-                        <div className="relative rounded-2xl overflow-hidden aspect-[3/4]">
-                            <img
-                                src={img}
-                                alt={title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                            />
-                            {/* Duration badge */}
-                            <div className="absolute top-4 left-4">
+                        {/* Image if present, else badge only */}
+                        <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-gray-100 flex items-start">
+                            {img ? (
+                                <img
+                                    src={img}
+                                    alt={title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
+                                />
+                            ) : null}
+                            <div className="absolute top-4 left-4 z-10">
                                 <span className="bg-[#1a3c3c]/80 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                                     {duration}
                                 </span>
                             </div>
                         </div>
-
                         {/* Info */}
                         <div className="flex flex-col gap-1 px-1">
                             <h3 className="text-[#0d2b2b] font-extrabold text-xl leading-tight">
                                 {title}
                             </h3>
                             <p className="text-gray-500 text-sm">
-                                From ${" "}
-                                <span className="text-[#0d2b2b] font-bold text-base">${price}</span>
-                                {" "}/ Per Person
+                                {price}
                             </p>
                         </div>
                     </div>
@@ -99,16 +93,59 @@ export default function TourPackages() {
                 <p className="text-[#0d2b2b] text-sm font-medium">
                     Explore more journeys waiting for you
                 </p>
-                <div className="flex items-center gap-1">
-                    <button className="bg-[#1a3c3c] text-white text-sm font-semibold px-7 py-3 rounded-l-full hover:bg-[#153030] transition-colors">
+                <div
+                    className="hero2-btn flex items-center cursor-pointer overflow-hidden border border-[#1a3c3c] bg-transparent"
+                    style={{ borderRadius: "20px", width: "210px", height: "54px", fontFamily: 'Funnel Display, sans-serif', fontWeight: 500, fontSize: "1.1rem" }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <div
+                        className="left-div bg-[#1a3c3c] flex items-center justify-center text-white font-semibold text-base flex-shrink-0 h-full"
+                        style={{
+                            width: "75%",
+                            borderRadius: isHovered ? "20px 0 0 20px" : "20px",
+                            marginLeft: "-1px",
+                            transition: "border-radius 0.3s ease",
+                        }}
+                    >
                         View Packages
-                    </button>
-                    <button className="bg-[#1a3c3c] text-white w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#153030] transition-colors">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="7" y1="17" x2="17" y2="7" />
-                            <polyline points="7 7 17 7 17 17" />
-                        </svg>
-                    </button>
+                    </div>
+                    <div
+                        className="right-wrapper flex items-center justify-center flex-shrink-0 h-full"
+                        style={{
+                            width: "25%",
+                            padding: isHovered ? "2px" : "2px 2px 2px 7px",
+                            transition: "padding 0.3s ease, margin 0.3s ease",
+                        }}
+                    >
+                        <div
+                            className="right-div bg-[#1a3c3c] flex items-center justify-center w-full h-full"
+                            style={{
+                                borderRadius: isHovered ? "0 20px 20px 0" : "20px",
+                                transition: "border-radius 0.3s ease",
+                            }}
+                        >
+                            <svg
+                                className="arrow-svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 14 14"
+                                fill="none"
+                                style={{
+                                    transition: "transform 0.3s ease",
+                                    transform: isHovered ? "rotate(45deg)" : "rotate(0deg)"
+                                }}
+                            >
+                                <path
+                                    d="M2 12L12 2M12 2H5M12 2V9"
+                                    stroke="#fff"
+                                    strokeWidth="2.2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

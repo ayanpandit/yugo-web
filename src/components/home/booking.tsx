@@ -1,24 +1,14 @@
 "use client";
 // ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "/booking/1.jpg";   // full-page background
-const img2 = "/booking/2.jpg";   // Authentic Experiences
-const img3 = "/booking/3.jpg";   // Culinary Adventures
-const img4 = "/booking/4.jpg";   // Trusted Partnerships
-const img5 = "/booking/5.jpg";   // Cultural Immersion
-const img6 = "/booking/6.jpg";
-const img7 = "/booking/7.jpg";
-const img8 = "/booking/8.jpg";
-const img9 = "/booking/9.jpg";
-// ──────────────────────────────────────────────────────────────────────────────
-
+const img1 = "/final_home/booking/1.jpg";   // full-page background
 import { useState } from "react";
 
 // ── Feature data ──────────────────────────────────────────────────────────────
 const features = [
     {
-        img: img2,
-        title: "Authentic Experiences",
-        desc: "Trips tailored to your style and your budget.",
+        img: "https://images.pexels.com/photos/3769138/pexels-photo-3769138.jpeg",
+        title: "AI Trip Planning",
+        desc: "Personalized itineraries built around your budget, vibe, and travel style.",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
@@ -30,9 +20,9 @@ const features = [
         ),
     },
     {
-        img: img3,
-        title: "Culinary Adventures",
-        desc: "Savor local cuisines with guided food tours.",
+        img: "https://images.pexels.com/photos/618613/pexels-photo-618613.jpeg",
+        title: "Find Your Travel People",
+        desc: "Connect with verified travelers who actually match your energy.",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
@@ -44,9 +34,9 @@ const features = [
         ),
     },
     {
-        img: img4,
-        title: "Trusted Partnerships",
-        desc: "Handpicked hotels, guides, and local experiences.",
+        img: "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg",
+        title: "Safer Social Travel",
+        desc: "Chat, plan, and connect before joining any trip.",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
@@ -55,9 +45,9 @@ const features = [
         ),
     },
     {
-        img: img5,
-        title: "Cultural Immersion",
-        desc: "Engage with local traditions and communities.",
+        img: "https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg",
+        title: "Discover Better Experiences",
+        desc: "Hidden gems, local cafés, road trips, adventures, and unforgettable memories.",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
@@ -75,7 +65,7 @@ export default function WhyTravelWithUs() {
     const [activeIdx, setActiveIdx] = useState(0);
 
     return (
-        <section className="relative w-full min-h-screen overflow-hidden font-sans">
+        <section id="why-yougo" className="relative w-full min-h-screen overflow-hidden font-sans">
 
             {/* ── Full-page background ─────────────────────────────────────────────── */}
             <img
@@ -97,10 +87,10 @@ export default function WhyTravelWithUs() {
                             <circle cx="12" cy="12" r="3" />
                             <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                         </svg>
-                        <span>Why Travel With Us</span>
+                        <span>WHY PEOPLE USE YOUGO</span>
                     </div>
                     <h2 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight max-w-2xl">
-                        Book With Confidence, Travel<br />With Peace Of Mind
+                        Travel Smarter.<br />Travel Together.
                     </h2>
                 </div>
 

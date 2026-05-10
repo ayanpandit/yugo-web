@@ -1,14 +1,14 @@
 "use client";
 // ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "/destination/1.jpg";   // group 1 – background
-const img2 = "/destination/2.jpg";   // group 1 – center card
-const img3 = "/destination/3.jpg";   // group 2 – background
-const img4 = "/destination/4.jpg";   // group 2 – center card
-const img5 = "/destination/5.jpg";   // group 3 – background
-const img6 = "/destination/6.jpg";   // group 3 – center card
-const img7 = "/destination/7.jpg";   // group 4 – background
-const img8 = "/destination/8.jpg";   // group 4 – center card
-const img9 = "/destination/9.jpg";   // extra (used in hover fans)
+const img1 = "final_home/destination/pexels-kushal-verma-123877130-9963738.jpg";   // group 1 – background
+const img2 = "final_home/destination/pexels-debphotography-16635815.jpg";   // group 1 – center card
+const img3 = "final_home/destination/pexels-charanpreet-singh-2058010617-29230111.jpg";   // group 2 – background
+const img4 = "final_home/destination/pexels-santosh-bhagat-164427997-34568382.jpg";   // group 2 – center card
+const img5 = "final_home/destination/pexels-kr-mohaniyan-2230943-4059604.jpg";   // group 3 – background
+const img6 = "final_home/destination/pexels-felix-young-449360607-17575036.jpg";   // group 3 – center card
+const img7 = "final_home/destination/pexels-sudipto-chakrabarty-2152424918-36613304.jpg";   // group 4 – background
+const img8 = "final_home/destination/pexels-chandi-saha-706198694-18728098.jpg";   // group 4 – center card
+const img9 = "final_home/destination/pexels-chandi-saha-706198694-18728098.jpg";   // extra (used in hover fans)
 // ──────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useState } from "react";
@@ -18,30 +18,30 @@ const GROUPS = [
     {
         bg: img1,
         card: img2,
-        name: "Japan",
-        desc: "Technology, vibrant nightlife & traditions",
+        name: "Tungnath",
+        desc: "The highest Shiva temple in the world,",
         // Other groups' center cards shown as fan on hover
         fanCards: [img4, img6, img8],
     },
     {
         bg: img3,
         card: img4,
-        name: "Switzerland",
-        desc: "Alpine beauty, serene lakes & mountain adventures",
+        name: "Kachchh",
+        desc: "A massive white salt desert that shines under moonlight",
         fanCards: [img2, img6, img8],
     },
     {
         bg: img5,
         card: img6,
-        name: "Dubai",
-        desc: "Luxury, futuristic skyline & desert wonders",
+        name: "Indira Point",
+        desc: "The southernmost tip of the Indian mainland is Kanyakumari ",
         fanCards: [img2, img4, img9],
     },
     {
         bg: img7,
         card: img8,
-        name: "Egypt",
-        desc: "Ancient wonders, pharaohs & timeless mysteries",
+        name: "Varanasi",
+        desc: "One of the world's oldest continuously inhabited cities",
         fanCards: [img2, img4, img6],
     },
 ];
@@ -170,16 +170,7 @@ export default function DestinationsHero() {
                     {/* ── Foreground ─────────────────────────────────────────────────── */}
                     <div className="relative z-10 h-full flex flex-col items-center">
 
-                        {/* Nav */}
-                        <nav className="w-full flex justify-center items-center gap-5 pt-5 pb-3 px-6">
-                            <span className="text-white text-2xl font-extrabold tracking-tight select-none">
-                                Traavellio
-                            </span>
-                            <button aria-label="Menu" className="flex flex-col gap-[5px]">
-                                <span className="block w-6 h-[2px] bg-white rounded-full" />
-                                <span className="block w-6 h-[2px] bg-white rounded-full" />
-                            </button>
-                        </nav>
+                        {/* Nav removed: Traavellio and hamburger menu deleted as requested */}
 
                         {/* Label */}
                         <div className="flex items-center gap-2 text-white/75 text-xs font-semibold tracking-[0.2em] uppercase mt-3">
@@ -255,8 +246,8 @@ export default function DestinationsHero() {
                                 <div
                                     key={i}
                                     className={`rounded-full transition-all duration-500 ${i === visibleIdx
-                                            ? "w-6 h-2 bg-white"
-                                            : "w-2 h-2 bg-white/40"
+                                        ? "w-6 h-2 bg-white"
+                                        : "w-2 h-2 bg-white/40"
                                         }`}
                                 />
                             ))}

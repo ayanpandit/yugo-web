@@ -1,19 +1,24 @@
-// ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "/vibe/1.jpg";
-const img2 = "/vibe/2.jpg";
-const img3 = "/vibe/3.jpg";
-const img4 = "/vibe/4.jpg";
-const img5 = "/vibe/5.jpg";
-const img6 = "/vibe/6.jpg";
-const img7 = "/vibe/7.jpg";
-const img8 = "/vibe/8.jpg";
-const img9 = "/vibe/9.jpg";
+"use client";
 // ──────────────────────────────────────────────────────────────────────────────
 
 // Gallery images — add / reorder as needed
-const galleryImages = [img1, img2, img3, img4, img5, img6, img7, img8, img9];
+const galleryImages = [
+    "https://images.pexels.com/photos/1430677/pexels-photo-1430677.jpeg",
+    "https://images.pexels.com/photos/618613/pexels-photo-618613.jpeg",
+    "https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg",
+    "https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg",
+    "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg",
+    "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg",
+    "https://images.pexels.com/photos/1371360/pexels-photo-1371360.jpeg",
+];
+
+import { useState } from "react";
 
 export default function VibeGallery() {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => setIsHovered(true);
+    const handleMouseLeave = () => setIsHovered(false);
     return (
         <section className="bg-white w-full py-16 font-sans overflow-hidden">
 
@@ -40,10 +45,10 @@ export default function VibeGallery() {
                         <rect x="3" y="14" width="7" height="7" rx="1" />
                         <rect x="14" y="14" width="7" height="7" rx="1" />
                     </svg>
-                    <span>Vibe with Us</span>
+                    <span>Community Moments</span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0d2b2b] leading-tight max-w-2xl">
-                    Real Travel Stories From Around<br />The World
+                    Real Memories Made<br />With YouGO
                 </h2>
             </div>
 
@@ -77,19 +82,61 @@ export default function VibeGallery() {
             {/* ── Footer row ──────────────────────────────────────────────────────── */}
             <div className="max-w-[1300px] mx-auto mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6 px-6 md:px-12 lg:px-16">
                 <p className="text-[#0d2b2b] text-sm font-medium">
-                    Tag <span className="font-bold">#VibeWithTravellio</span> to get featured.
+                    Tag <span className="font-bold">#YouGOJourneys</span> to get featured and inspire the next traveler.
                 </p>
-                <div className="flex items-center gap-1">
-                    <button className="bg-[#1a3c3c] text-white text-sm font-semibold px-7 py-3 rounded-l-full hover:bg-[#153030] transition-colors">
-                        View Gallery
-                    </button>
-                    <button className="bg-[#1a3c3c] text-white w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#153030] transition-colors">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="7" y1="17" x2="17" y2="7" />
-                            <polyline points="7 7 17 7 17 17" />
-                        </svg>
-                    </button>
+                <div
+                    className="hero2-btn flex items-center cursor-pointer overflow-hidden border border-[#1a3c3c] bg-transparent"
+                    style={{ borderRadius: "20px", width: "210px", height: "54px", fontFamily: 'Funnel Display, sans-serif', fontWeight: 500, fontSize: "1.1rem" }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <div
+                        className="left-div bg-[#1a3c3c] flex items-center justify-center text-white font-semibold text-base flex-shrink-0 h-full"
+                        style={{
+                            width: "75%",
+                            borderRadius: isHovered ? "20px 0 0 20px" : "20px",
+                            marginLeft: "-1px",
+                            transition: "border-radius 0.3s ease",
+                        }}
+                    >
+                        Explore The Vibes
+                    </div>
+                    <div
+                        className="right-wrapper flex items-center justify-center flex-shrink-0 h-full"
+                        style={{
+                            width: "25%",
+                            padding: isHovered ? "2px" : "2px 2px 2px 7px",
+                            transition: "padding 0.3s ease, margin 0.3s ease",
+                        }}
+                    >
+                        <div
+                            className="right-div bg-[#1a3c3c] flex items-center justify-center w-full h-full"
+                            style={{
+                                borderRadius: isHovered ? "0 20px 20px 0" : "20px",
+                                transition: "border-radius 0.3s ease",
+                            }}
+                        >
+                            <svg
+                                className="arrow-svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 14 14"
+                                fill="none"
+                                style={{
+                                    transition: "transform 0.3s ease",
+                                    transform: isHovered ? "rotate(45deg)" : "rotate(0deg)"
+                                }}
+                            >
+                                <path
+                                    d="M2 12L12 2M12 2H5M12 2V9"
+                                    stroke="#fff"
+                                    strokeWidth="2.2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
