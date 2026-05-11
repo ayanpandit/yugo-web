@@ -30,7 +30,8 @@ This document explains the project structure, tech stack, and where key code liv
   - manifest.ts: Web app manifest.
 - public/
   - logo.png: Brand logo.
-  - icon-192.png, icon-512.png: App icons for manifest and tab icons.
+  - icon-16.png, icon-32.png, icon-192.png, icon-512.png: App icons for manifest and tab icons.
+  - favicon.ico: Legacy favicon for broad browser support.
   - final_home/: Local media assets used by home sections.
 - docs/
   - business_perspective.md: Product and business context.
@@ -82,7 +83,7 @@ Each section is a client component when it uses animations, state, or effects.
 ## SEO and Metadata
 
 - app/layout.tsx sets metadata, Open Graph, Twitter, icons, and theme color.
-- app/lib/site.ts centralizes site name and description and reads NEXT_PUBLIC_SITE_URL.
+- app/lib/site.ts centralizes site name and description and reads environment variables.
 - app/robots.ts and app/sitemap.ts generate robots and sitemap routes.
 - app/manifest.ts defines a PWA manifest with icons.
 
@@ -96,6 +97,14 @@ Each section is a client component when it uses animations, state, or effects.
   - Pexels domain allowed for remote images.
 - tsconfig.json defines TypeScript config.
 - eslint.config.mjs configures linting.
+
+## Environment Variables
+
+These values live in the .env file and can be changed without touching code:
+
+- NEXT_PUBLIC_SITE_URL: Base URL used for metadata, sitemap, and robots.
+- NEXT_PUBLIC_SITE_NAME: Brand name used in page titles.
+- NEXT_PUBLIC_SITE_DESCRIPTION: Meta description used across the site.
 
 ## Scripts
 
