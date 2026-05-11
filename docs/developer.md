@@ -101,17 +101,24 @@ yugo-web/
 
 ## Architecture Decisions
 
-### 1. App Router (Thin Re-exports)
+### 1. App Router (Single-File Router)
 
-The `src/app/` directory is treated as a **thin routing layer**. Route files (`page.tsx`) simply re-export the default component from `src/components/footer/`.
+The `src/app/` directory is kept exceptionally clean, containing only `layout.tsx`, `page.tsx`, `globals.css`, and the `icon.png`. We use a **Single-File Router** pattern where `page.tsx` acts as a central hub, dynamically rendering components from `src/components/footer/` based on URL rewrites.
 
-```ts
-// src/app/about/page.tsx — thin re-export pattern
-export { default } from "@/components/footer/about-page";
-export { metadata } from "@/components/footer/about-page";
-```
+---
 
-**Why?** This structure separates the routing layer from the actual component logic, keeping the `app` directory purely focused on URL definitions, while the `components/footer` directory acts as the single source of truth for the standalone page UI.
+### 2. Production Optimizations
+
+We have implemented several industry-grade optimizations to ensure maximum performance and SEO readiness:
+
+- **Dynamic Imports (`next/dynamic`)**: The root `page.tsx` uses dynamic imports to lazy-load route-specific components. This significantly reduces the initial bundle size for the homepage.
+- **URL Rewrites**: Clean URLs are maintained via `next.config.ts` rewrites, providing a professional navigation experience without folder clutter.
+- **SEO Assets**: `robots.txt` and `sitemap.xml` are located in the `public/` folder to ensure full search engine indexability.
+- **Standalone Output**: The Docker build uses `output: "standalone"` for a minimal production image (~100MB).
+- **Inertial Scroll**: Lenis is configured with high-performance RAF loops in `src/components/providers/smooth-scroll.tsx`.
+
+**Why?** This structure separates the routing layer from the actual component logic while meeting strict "clean folder" requirements for the `app` directory.
+
 
 ---
 

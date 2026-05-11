@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Final_home from "../components/home/final_home";
-import AboutPage from "../components/footer/about-page";
-import BlogsPage from "../components/footer/blogs-page";
-import BookTripPage from "../components/footer/book-a-trip-page";
-import PrivacyPage from "../components/footer/privacy-policy-page";
-import TermsPage from "../components/footer/terms-conditions-page";
-import ToursPage from "../components/footer/tours-page";
+
+const AboutPage = dynamic(() => import("../components/footer/about-page"));
+const BlogsPage = dynamic(() => import("../components/footer/blogs-page"));
+const BookTripPage = dynamic(() => import("../components/footer/book-a-trip-page"));
+const PrivacyPage = dynamic(() => import("../components/footer/privacy-policy-page"));
+const TermsPage = dynamic(() => import("../components/footer/terms-conditions-page"));
+const ToursPage = dynamic(() => import("../components/footer/tours-page"));
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
