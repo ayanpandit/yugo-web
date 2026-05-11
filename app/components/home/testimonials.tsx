@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useState } from "react";
 
 const testimonials = [
@@ -109,11 +111,14 @@ export default function Testimonials() {
                 style={{ minHeight: "480px" }}
             >
                 {/* Background image — fades out then in */}
-                <img
+                <Image
                     key={activeIdx}
                     src={t.bg}
                     alt={t.name}
-                    className={`absolute inset-0 w-full h-full object-cover ${bgClass}`}
+                    fill
+                    className={`object-cover ${bgClass}`}
+                    sizes="100vw"
+                    priority
                 />
 
                 {/* Static gradient overlays */}
@@ -156,7 +161,7 @@ export default function Testimonials() {
                             onClick={() => handleSelect(i)}
                             aria-label={`View testimonial from ${name}`}
                             disabled={busy}
-                            className={`rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 focus:outline-none ${i === activeIdx
+                            className={`rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 focus:outline-none relative ${i === activeIdx
                                 ? "w-16 h-16 opacity-100 scale-110"
                                 : "w-12 h-12 opacity-50 hover:opacity-80 hover:scale-105"
                                 }`}
@@ -166,7 +171,13 @@ export default function Testimonials() {
                                     : {}
                             }
                         >
-                            <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                            <Image
+                                src={avatar}
+                                alt={name}
+                                fill
+                                className="object-cover"
+                                sizes="64px"
+                            />
                         </button>
                     ))}
                 </div>

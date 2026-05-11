@@ -7,6 +7,7 @@ const img5 = "/final_home/about/pexels-smit-prajapati-130663561-30525536.jpg";
 const img6 = "/final_home/about/pexels-sufail-pc-1776010-15164332.jpg";
 const img7 = "/final_home/about/pexels-tufan-kuzucuoglu-1677261930-31403782.jpg";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const carouselImages = [img2, img3, img4, img5, img6, img7];
@@ -124,11 +125,13 @@ export default function AboutUs() {
                     </div>
 
                     {/* Bottom image (asset 1) */}
-                    <div className="rounded-2xl overflow-hidden mt-2 w-full aspect-[16/9] lg:aspect-[4/3]">
-                        <img
+                    <div className="rounded-2xl overflow-hidden mt-2 w-full aspect-[16/9] lg:aspect-[4/3] relative">
+                        <Image
                             src={img1}
                             alt="Travel scene 1"
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 100vw, 50vw"
                         />
                     </div>
                 </div>
@@ -138,11 +141,14 @@ export default function AboutUs() {
                     {/* Fixed tall aspect ratio on desktop, 16/9 on mobile */}
                     <div className="aspect-[3/4] sm:aspect-[4/5] lg:aspect-[3/4] w-full relative">
                         {carouselImages.map((src, idx) => (
-                            <img
+                            <Image
                                 key={idx}
                                 src={src}
                                 alt={`Destination ${idx + 5}`}
-                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${idx === current ? "opacity-100" : "opacity-0"}`}
+                                fill
+                                className={`object-cover transition-opacity duration-500 ease-in-out ${idx === current ? "opacity-100" : "opacity-0"}`}
+                                sizes="(max-width: 1024px) 100vw, 50vw"
+                                priority={idx === 0}
                             />
                         ))}
 

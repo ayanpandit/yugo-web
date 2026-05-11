@@ -5,6 +5,8 @@ const img3 = "/final_home/explore/3.png";
 const img4 = "/final_home/explore/4.png";
 // ─────────────────────────────────────────────────────────────────────────────
 
+import Image from "next/image";
+
 const experiences = [
     {
         img: img1,
@@ -69,11 +71,13 @@ export default function ExperienceSection() {
                         {imageFirst ? (
                             <>
                                 {/* Image top */}
-                                <div className="rounded-2xl overflow-hidden flex-shrink-0 aspect-[3/4]">
-                                    <img
+                                <div className="rounded-2xl overflow-hidden flex-shrink-0 aspect-[3/4] relative">
+                                    <Image
                                         src={img}
                                         alt={title}
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                                        fill
+                                        className="object-cover hover:scale-105 transition-transform duration-700"
+                                        sizes="(max-width: 1024px) 50vw, 25vw"
                                     />
                                 </div>
                                 {/* Text below */}
@@ -90,11 +94,13 @@ export default function ExperienceSection() {
                                     <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
                                 </div>
                                 {/* Image below */}
-                                <div className="rounded-2xl overflow-hidden flex-shrink-0 aspect-[3/4]">
-                                    <img
+                                <div className="rounded-2xl overflow-hidden flex-shrink-0 aspect-[3/4] relative">
+                                    <Image
                                         src={img}
                                         alt={title}
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                                        fill
+                                        className="object-cover hover:scale-105 transition-transform duration-700"
+                                        sizes="(max-width: 1024px) 50vw, 25vw"
                                     />
                                 </div>
                             </>

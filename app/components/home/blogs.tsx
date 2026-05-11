@@ -1,15 +1,17 @@
 "use client";
 
+import Image from "next/image";
+
 // ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "final_home/blogs/1.jpg";
-const img2 = "final_home/blogs/2.jpg";
-const img3 = "final_home/blogs/3.jpg";
-const img4 = "final_home/blogs/4.jpg";
-const img5 = "final_home/blogs/5.jpg";
-const img6 = "final_home/blogs/6.jpg";
-const img7 = "final_home/blogs/7.jpg";
-const img8 = "final_home/blogs/8.jpg";
-const img9 = "final_home/blogs/9.jpg";
+const img1 = "/final_home/blogs/1.jpg";
+const img2 = "/final_home/blogs/2.jpg";
+const img3 = "/final_home/blogs/3.jpg";
+const img4 = "/final_home/blogs/4.jpg";
+const img5 = "/final_home/blogs/5.jpg";
+const img6 = "/final_home/blogs/6.jpg";
+const img7 = "/final_home/blogs/7.jpg";
+const img8 = "/final_home/blogs/8.jpg";
+const img9 = "/final_home/blogs/9.jpg";
 // ──────────────────────────────────────────────────────────────────────────────
 
 const blogs = [
@@ -59,10 +61,12 @@ export default function Blogs() {
 
                         {/* Image + arrow button */}
                         <div className="relative rounded-2xl overflow-hidden aspect-[16/10]">
-                            <img
+                            <Image
                                 src={img}
                                 alt={title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                sizes="(max-width: 1024px) 100vw, 50vw"
                             />
                             {/* Arrow button top-right */}
                             <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition-colors">

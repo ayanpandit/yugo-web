@@ -1,6 +1,7 @@
 "use client";
 // ─── Asset Imports ────────────────────────────────────────────────────────────
 const img1 = "/final_home/booking/1.jpg";   // full-page background
+import Image from "next/image";
 import { useState } from "react";
 
 // ── Feature data ──────────────────────────────────────────────────────────────
@@ -68,10 +69,13 @@ export default function WhyTravelWithUs() {
         <section id="why-yougo" className="relative w-full min-h-screen overflow-hidden font-sans">
 
             {/* ── Full-page background ─────────────────────────────────────────────── */}
-            <img
+            <Image
                 src={img1}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="100vw"
+                priority
             />
             {/* Dark gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-black/70 to-[#0a2e2e]/80" />
@@ -117,10 +121,12 @@ export default function WhyTravelWithUs() {
                                     className="relative flex-shrink-0 h-full"
                                     style={{ width: `${100 / features.length}%` }}
                                 >
-                                    <img
+                                    <Image
                                         src={img}
                                         alt={title}
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 1024px) 100vw, 50vw"
                                     />
                                 </div>
                             ))}

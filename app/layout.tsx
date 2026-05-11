@@ -21,6 +21,15 @@ export const metadata: Metadata = {
   },
   description: siteMeta.description,
   applicationName: siteMeta.name,
+  icons: {
+    icon: [
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
+  },
+  manifest: "/manifest.webmanifest",
+  themeColor: "#0d2b2b",
   openGraph: {
     type: "website",
     url: siteUrl,

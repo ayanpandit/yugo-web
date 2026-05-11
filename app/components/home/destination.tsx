@@ -1,16 +1,17 @@
 "use client";
 // ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "final_home/destination/pexels-kushal-verma-123877130-9963738.jpg";   // group 1 – background
-const img2 = "final_home/destination/pexels-debphotography-16635815.jpg";   // group 1 – center card
-const img3 = "final_home/destination/pexels-charanpreet-singh-2058010617-29230111.jpg";   // group 2 – background
-const img4 = "final_home/destination/pexels-santosh-bhagat-164427997-34568382.jpg";   // group 2 – center card
-const img5 = "final_home/destination/pexels-kr-mohaniyan-2230943-4059604.jpg";   // group 3 – background
-const img6 = "final_home/destination/pexels-felix-young-449360607-17575036.jpg";   // group 3 – center card
-const img7 = "final_home/destination/pexels-sudipto-chakrabarty-2152424918-36613304.jpg";   // group 4 – background
-const img8 = "final_home/destination/pexels-chandi-saha-706198694-18728098.jpg";   // group 4 – center card
-const img9 = "final_home/destination/pexels-chandi-saha-706198694-18728098.jpg";   // extra (used in hover fans)
+const img1 = "/final_home/destination/pexels-kushal-verma-123877130-9963738.jpg";   // group 1 – background
+const img2 = "/final_home/destination/pexels-debphotography-16635815.jpg";   // group 1 – center card
+const img3 = "/final_home/destination/pexels-charanpreet-singh-2058010617-29230111.jpg";   // group 2 – background
+const img4 = "/final_home/destination/pexels-santosh-bhagat-164427997-34568382.jpg";   // group 2 – center card
+const img5 = "/final_home/destination/pexels-kr-mohaniyan-2230943-4059604.jpg";   // group 3 – background
+const img6 = "/final_home/destination/pexels-felix-young-449360607-17575036.jpg";   // group 3 – center card
+const img7 = "/final_home/destination/pexels-sudipto-chakrabarty-2152424918-36613304.jpg";   // group 4 – background
+const img8 = "/final_home/destination/pexels-chandi-saha-706198694-18728098.jpg";   // group 4 – center card
+const img9 = "/final_home/destination/pexels-chandi-saha-706198694-18728098.jpg";   // extra (used in hover fans)
 // ──────────────────────────────────────────────────────────────────────────────
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -152,19 +153,26 @@ export default function DestinationsHero() {
 
                     {/* ── Backgrounds ────────────────────────────────────────────────── */}
                     <div className="absolute inset-0 pointer-events-none">
-                        <img
-                            src={curr.bg}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        <img
-                            src={next.bg}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover"
-                            style={{ opacity: bgNextOpacity }}
-                        />
-                        {/* Gradient vignette */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/80" />
+                        <div className="relative w-full h-full">
+                            <Image
+                                src={curr.bg}
+                                alt=""
+                                fill
+                                className="object-cover"
+                                sizes="100vw"
+                                priority
+                            />
+                            <Image
+                                src={next.bg}
+                                alt=""
+                                fill
+                                className="object-cover"
+                                sizes="100vw"
+                                style={{ opacity: bgNextOpacity }}
+                            />
+                            {/* Gradient vignette */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/80" />
+                        </div>
                     </div>
 
                     {/* ── Foreground ─────────────────────────────────────────────────── */}
@@ -295,7 +303,15 @@ function CardFace({ img, name, desc, fanCards, showFan, style }: CardFaceProps) 
             className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
         >
             {/* Main image */}
-            <img src={img} alt={name} className="w-full h-full object-cover" />
+            <div className="relative w-full h-full">
+                <Image
+                    src={img}
+                    alt={name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 80vw, 490px"
+                />
+            </div>
 
             {/* Hover fan cards */}
             {showFan && (
@@ -314,7 +330,15 @@ function CardFace({ img, name, desc, fanCards, showFan, style }: CardFaceProps) 
                                     "--fan-to": `rotate(${rotate}deg) translate(${tx}px, ${ty}px) scale(1)`,
                                 } as React.CSSProperties}
                             >
-                                <img src={fc} alt="" className="w-full h-full object-cover" />
+                                <div className="relative w-full h-full">
+                                    <Image
+                                        src={fc}
+                                        alt=""
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 768px) 30vw, 130px"
+                                    />
+                                </div>
                             </div>
                         );
                     })}

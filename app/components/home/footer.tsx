@@ -1,8 +1,10 @@
 "use client";
 
 // ─── Asset Imports ────────────────────────────────────────────────────────────
-const img1 = "final_home/footer/pexels-jean-paul-wettstein-677916508-32514307.jpg";
+const img1 = "/final_home/footer/pexels-jean-paul-wettstein-677916508-32514307.jpg";
 // ──────────────────────────────────────────────────────────────────────────────
+
+import Image from "next/image";
 
 const services = [
     { icon: "👥", label: "Find Travel Partners" },
@@ -102,7 +104,14 @@ export default function Footer() {
             {/* ── CTA hero ────────────────────────────────────────────────────────── */}
             <div className="relative w-full overflow-hidden min-h-screen" style={{ minHeight: "100vh" }}>
                 {/* Background */}
-                <img src={img1} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <Image
+                    src={img1}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                    priority
+                />
                 <div className="absolute inset-0 bg-black/60" />
 
                 {/* Content */}

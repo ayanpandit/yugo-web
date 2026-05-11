@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 const bgVideo = "/final_home/hero/back_vid.mp4";
@@ -68,7 +69,14 @@ export default function HeroSection() {
                     className="pointer-events-auto flex items-center justify-between gap-10 px-8 py-3.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[30px] text-white hover:bg-white/20 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]"
                 >
                     <div className="flex items-center gap-2">
-                        <img src="/logo.png" alt="YouGO Logo" className="w-7 h-7 object-contain drop-shadow-md" />
+                        <Image
+                            src="/logo.png"
+                            alt="YouGO Logo"
+                            width={28}
+                            height={28}
+                            className="w-7 h-7 object-contain drop-shadow-md"
+                            priority
+                        />
                         <span className="font-extrabold text-2xl tracking-tight leading-none drop-shadow-md">
                             <span className="text-white">You</span><span className="text-[#3b82f6]">GO</span>
                         </span>
@@ -89,7 +97,14 @@ export default function HeroSection() {
             >
                 {/* Logo inside menu */}
                 <div className="absolute top-10 left-10 md:left-16 z-[80] flex items-center gap-2">
-                    <img src="/logo.png" alt="YouGO" className="w-8 h-8 object-contain drop-shadow-md" />
+                    <Image
+                        src="/logo.png"
+                        alt="YouGO"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 object-contain drop-shadow-md"
+                        priority
+                    />
                     <span className="font-extrabold text-2xl tracking-tight leading-none drop-shadow-md">
                         <span className="text-white">You</span><span className="text-[#3b82f6]">GO</span>
                     </span>
@@ -110,8 +125,14 @@ export default function HeroSection() {
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col md:flex-row items-center justify-center px-10 md:px-24 lg:px-40 gap-12 md:gap-32 w-full h-full pt-24 pb-24">
                     {/* Left: Image */}
-                    <div className="hidden md:block w-[320px] h-[420px] lg:w-[380px] lg:h-[480px] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 transform rotate-[-2deg]">
-                        <img src="/final_home/navbar/1.jpg" alt="Travel Destination" className="w-full h-full object-cover" />
+                    <div className="hidden md:block w-[320px] h-[420px] lg:w-[380px] lg:h-[480px] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 transform rotate-[-2deg] relative">
+                        <Image
+                            src="/final_home/navbar/1.jpg"
+                            alt="Travel Destination"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 70vw, 380px"
+                        />
                     </div>
 
                     {/* Right: Links */}
@@ -185,11 +206,16 @@ export default function HeroSection() {
           `}
                     style={{ transitionDelay: `${0.18 + i * 0.13}s` }}
                 >
-                    <img
-                        src={img.src}
-                        alt={img.alt}
-                        className="w-full h-full object-cover block select-none pointer-events-none"
-                    />
+                    <div className="relative w-full h-full">
+                        <Image
+                            src={img.src}
+                            alt={img.alt}
+                            fill
+                            className="object-cover block select-none pointer-events-none"
+                            sizes="(max-width: 640px) 50vw, 25vw"
+                            priority={i === 0}
+                        />
+                    </div>
                 </div>
             ))}
 

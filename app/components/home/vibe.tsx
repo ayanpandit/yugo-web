@@ -1,5 +1,6 @@
 "use client";
 // ──────────────────────────────────────────────────────────────────────────────
+import Image from "next/image";
 
 // Gallery images — add / reorder as needed
 const galleryImages = [
@@ -69,10 +70,12 @@ export default function VibeGallery() {
                             className={`flex-shrink-0 rounded-2xl overflow-hidden ${i % 3 === 1 ? "w-56 h-80" : "w-52 h-72"
                                 } hover:scale-[1.03] transition-transform duration-500`}
                         >
-                            <img
+                            <Image
                                 src={src}
                                 alt={`Travel story ${(i % galleryImages.length) + 1}`}
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 45vw, 220px"
                             />
                         </div>
                     ))}

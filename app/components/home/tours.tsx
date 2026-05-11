@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 const packages = [
     {
         img: "https://images.pexels.com/photos/15447033/pexels-photo-15447033.jpeg",
@@ -63,10 +65,12 @@ export default function TourPackages() {
                         {/* Image if present, else badge only */}
                         <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-gray-100 flex items-start">
                             {img ? (
-                                <img
+                                <Image
                                     src={img}
                                     alt={title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
+                                    fill
+                                    className="object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
+                                    sizes="(max-width: 1024px) 50vw, 25vw"
                                 />
                             ) : null}
                             <div className="absolute top-4 left-4 z-10">
