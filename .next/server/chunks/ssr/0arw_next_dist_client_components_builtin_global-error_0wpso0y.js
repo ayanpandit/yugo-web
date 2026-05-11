@@ -1,3 +1,0 @@
-module.exports=[59847,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(81993);a.n(d("[project]/yugo-web/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},74581,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(81993);a.n(d("[project]/yugo-web/node_modules/next/dist/client/components/builtin/global-error.js"))},43946,a=>{"use strict";a.i(59847);var b=a.i(74581);a.n(b)},58662,a=>{a.n(a.i(43946))}];
-
-//# sourceMappingURL=0arw_next_dist_client_components_builtin_global-error_0wpso0y.js.map
