@@ -5,9 +5,15 @@ import Sidebar from "./sidebar";
 import Header from "./header";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { cn } from "@/app/lib/utils";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Hide header on specific pages
+  const hideHeader = pathname === "/messages" || pathname === "/post-trip";
 
   return (
     <div className="flex min-h-screen bg-[#f8fafb]">
@@ -63,9 +69,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
-        <Header />
+        {!hideHeader && <Header />}
         
-        <div className="px-4 md:px-8 pb-8 flex-1 overflow-y-auto no-scrollbar">
+        <div className={cn(
+          "px-4 md:px-8 pb-8 flex-1 overflow-y-auto no-scrollbar",
+          hideHeader && "pt-20 lg:pt-8" // Add padding top when header is hidden to avoid toggle overlap
+        )}>
           {children}
         </div>
       </main>
