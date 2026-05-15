@@ -8,24 +8,24 @@ import { cn } from "@/app/lib/utils";
 export default function DashboardPage() {
   return (
     <DashboardLayout>
-      <div className="space-y-10">
+      <div className="space-y-6 md:space-y-10">
         {/* Discover World Section */}
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6 gap-4">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               Discover World <span className="text-xl">🌈</span>
             </h2>
-            <div className="flex gap-8 text-[15px]">
-              <button className="text-green-500 font-bold relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-green-500">Popular Places</button>
-              <button className="text-gray-400 font-medium hover:text-gray-600">Recommended</button>
-              <button className="text-gray-400 font-medium hover:text-gray-600">Near Me</button>
+            <div className="flex gap-4 md:gap-8 text-xs md:text-[15px] overflow-x-auto no-scrollbar pb-2 md:pb-0">
+              <button className="text-green-500 font-bold whitespace-nowrap relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-green-500">Popular Places</button>
+              <button className="text-gray-400 font-medium whitespace-nowrap hover:text-gray-600">Recommended</button>
+              <button className="text-gray-400 font-medium whitespace-nowrap hover:text-gray-600">Near Me</button>
             </div>
-            <button className="flex items-center gap-1 text-green-500 text-sm font-semibold hover:gap-2 transition-all">
+            <button className="hidden md:flex items-center gap-1 text-green-500 text-sm font-semibold hover:gap-2 transition-all">
               View all <ChevronRight size={16} />
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { title: "Mt. Merbabu", location: "Semarang, Indonesia", price: 450, img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=600" },
               { title: "Mt. Mandala", location: "Papua, Indonesia", price: 570, img: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&q=80&w=600" },
@@ -63,7 +63,7 @@ export default function DashboardPage() {
 
         {/* Event Dates Section */}
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               Event Dates <span className="text-xl">🚀</span>
             </h2>
@@ -73,7 +73,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Calendar Strip */}
-          <div className="flex justify-between items-center bg-white rounded-2xl p-4 shadow-sm mb-10 overflow-x-auto no-scrollbar gap-4">
+          <div className="flex justify-between items-center bg-white rounded-2xl p-4 shadow-sm mb-6 md:mb-10 overflow-x-auto no-scrollbar gap-4">
             {[
               { d: "Sun", n: 12 }, { d: "Mon", n: 13 }, { d: "Tue", n: 14, active: true },
               { d: "Wed", n: 15 }, { d: "Thu", n: 16 }, { d: "Fri", n: 17 },
@@ -91,29 +91,29 @@ export default function DashboardPage() {
           </div>
 
           {/* Event Cards Grid */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { title: "Mt. Kerinci", location: "Jambi, Indonesia", price: 320, active: true },
               { title: "Mt. Slamet", location: "Tegal, Indonesia", price: 560 },
               { title: "Mt. Latuk", location: "Kalimantan, Indonesia", price: 440 },
               { title: "Mt. Cereme", location: "Majalengka, Indonesia", price: 680 }
             ].map((event, i) => (
-              <div key={i} className="bg-white rounded-3xl p-5 flex items-center gap-5 shadow-sm border border-gray-50 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
+              <div key={i} className="bg-white rounded-3xl p-4 md:p-5 flex items-center gap-4 md:gap-5 shadow-sm border border-gray-50 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gray-100 overflow-hidden shrink-0">
                    <img src={`https://images.unsplash.com/photo-${1501785888041 + i}?auto=format&fit=crop&q=80&w=200`} alt={event.title} className="w-full h-full object-cover" />
                 </div>
-                <div className="flex-1">
-                   <h4 className="text-gray-800 font-bold text-[15px] mb-1">{event.title}</h4>
-                   <p className="text-gray-400 text-xs mb-3 truncate max-w-[150px]">{event.location}</p>
+                <div className="flex-1 min-w-0">
+                   <h4 className="text-gray-800 font-bold text-sm md:text-[15px] mb-1 truncate">{event.title}</h4>
+                   <p className="text-gray-400 text-[10px] md:text-xs mb-2 md:mb-3 truncate">{event.location}</p>
                    <div className="text-green-500 font-bold text-sm">
                       ${event.price}<span className="text-gray-300 text-[10px] font-medium ml-1">/day</span>
                    </div>
                 </div>
                 <button className={cn(
-                   "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+                   "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all",
                    event.active ? "bg-green-500 text-white shadow-lg shadow-green-100" : "bg-green-50 text-green-500 border border-green-50"
                 )}>
-                   <Heart size={16} fill={event.active ? "currentColor" : "none"} />
+                   <Heart size={14} fill={event.active ? "currentColor" : "none"} />
                 </button>
               </div>
             ))}
