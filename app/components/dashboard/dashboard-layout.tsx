@@ -53,13 +53,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-        {/* Mobile Header Toggle (Only visible on small screens) */}
-        <div className="lg:hidden absolute top-6 left-6 z-40">
+        {/* Mobile Header Toggle */}
+        <div className="lg:hidden absolute top-5 left-4 z-[60]">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="w-12 h-12 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center text-gray-800"
+            className="w-10 h-10 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center text-gray-800 hover:bg-gray-50 active:scale-95 transition-all"
           >
-            <Menu size={24} />
+            <Menu size={20} />
           </button>
         </div>
 

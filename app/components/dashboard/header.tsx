@@ -11,8 +11,8 @@ export default function Header() {
 
   return (
     <header className="relative z-50">
-      <div className="flex flex-col md:flex-row items-center justify-between px-4 md:px-8 py-6 bg-[#f8fafb] gap-6">
-        <div className="flex-1 w-full max-w-xl md:pl-0 pl-16 lg:pl-0">
+      <div className="flex flex-col md:flex-row items-center justify-between px-4 md:px-8 py-4 md:py-6 bg-[#f8fafb] gap-4 md:gap-6">
+        <div className="flex-1 w-full max-w-xl md:pl-0 pl-12 lg:pl-0">
           <div className="flex flex-col mb-4 md:mb-6">
             <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
               Hello, {MOCK_USER.name.split(" ")[0]}! <span className="text-xl">🤙</span>
