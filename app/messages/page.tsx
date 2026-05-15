@@ -35,8 +35,11 @@ export default function MessagesPage() {
   return (
     <div className="fixed inset-0 z-[200] bg-[#f8fafb] flex flex-col">
       
-      {/* Top Navigation Bar */}
-      <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm">
+      {/* Top Navigation Bar - Hidden on mobile when chat is open */}
+      <div className={cn(
+        "bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm",
+        isMobileChatOpen ? "hidden md:flex" : "flex"
+      )}>
         <Link href="/dashboard">
           <button className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors group">
             <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-gray-100">
