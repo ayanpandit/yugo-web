@@ -17,17 +17,22 @@ This document explains the project structure, tech stack, and where key code liv
 ## Project Structure
 
 - app/
-  - layout.tsx: Root layout, metadata, fonts, and HTML/body scaffold.
+  - layout.tsx: Root layout, metadata, fonts, and HTML/body scaffold. Wraps app with AuthProvider.
   - page.tsx: Home route entry point.
   - globals.css: Global styles and Tailwind import.
+  - dashboard/
+    - page.tsx: Main dashboard view with discover world and events.
+  - discover/
+    - page.tsx: Discover world view.
   - components/
-    - home/: Home page sections (hero, about, explore, destination, tours, booking, testimonials, blogs, vibe, faq, footer).
-    - providers/: App-wide or page-wide providers.
+    - home/: Home page sections.
+    - dashboard/: Dashboard-specific components (Sidebar, Header, Layout).
+    - providers/: App-wide providers (AuthProvider, SmoothScroll).
   - lib/
-    - site.ts: Site name, description, and site URL utility.
-  - robots.ts: Robots metadata route.
-  - sitemap.ts: Sitemap metadata route.
-  - manifest.ts: Web app manifest.
+    - site.ts: Site metadata.
+    - navigation.ts: Config-driven RBAC navigation settings.
+    - utils.ts: Tailwind merging utilities.
+  - robots.ts, sitemap.ts, manifest.ts: Metadata routes.
 - public/
   - logo.png: Brand logo.
   - icon-16.png, icon-32.png, icon-192.png, icon-512.png: App icons for manifest and tab icons.
@@ -106,6 +111,24 @@ These values live in the .env file and can be changed without touching code:
 - NEXT_PUBLIC_SITE_NAME: Brand name used in page titles.
 - NEXT_PUBLIC_SITE_DESCRIPTION: Meta description used across the site.
 
+## Dashboard & RBAC Architecture
+
+### Config-Driven Navigation
+The sidebar and protected routes are driven by `app/lib/navigation.ts`. Each `NavItem` defines:
+- `title`, `href`, `icon`
+- `roles`: List of allowed roles (`ADMIN`, `USER`, `GUEST`)
+- `badge`: Optional notification count
+
+### Role-Based Access Control (RBAC)
+- **AuthProvider**: A client-side provider in `app/components/providers/auth-provider.tsx` that checks the current user's role against the route configuration.
+- **Sidebar**: Automatically filters navigation items based on the user's role.
+- **Redirection**: Unauthorized users are automatically redirected to the home page.
+
+### Dashboard Composition
+Following the project's modular pattern, the dashboard uses a layout-first approach:
+1. `app/components/dashboard/dashboard-layout.tsx` composes the `Sidebar`, `Header`, and the main content area.
+2. Pages (e.g., `app/dashboard/page.tsx`) are wrapped in this layout to maintain consistency.
+
 ## Scripts
 
 From package.json:
@@ -123,6 +146,7 @@ From package.json:
 
 ## Notes
 
-- This project is primarily a marketing/landing page using the App Router.
-- Most home sections are client components due to animations and interactions.
-- Smooth scrolling is applied only to the home composition through FinalHome.
+- This project includes a marketing landing page and a professional dashboard.
+- Most components use client-side logic for animations (Framer Motion) and interactions.
+- RBAC is implemented via a central config and a high-level AuthProvider.
+- Dashboard UI follows a premium "glassmorphism" aesthetic with custom gradients and shadows.
