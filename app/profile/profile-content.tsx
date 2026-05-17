@@ -425,8 +425,6 @@ export default function ProfileContent() {
             </div>
 
           </div>
-
-          </div>
         </div>
 
         {/* Live Instagram Editor Form */}
