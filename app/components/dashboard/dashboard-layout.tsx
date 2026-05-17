@@ -12,8 +12,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // Hide header on specific pages
-  const hideHeader = pathname === "/messages" || pathname === "/post-trip";
+  // Show greeting header ONLY on the primary dashboard page
+  const hideHeader = pathname !== "/dashboard";
 
   return (
     <div className="flex min-h-screen bg-[#f8fafb]">
