@@ -215,6 +215,22 @@ export default function ProfileContent() {
     <div className="flex-1 overflow-y-auto no-scrollbar bg-[#fcfdfe]">
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-10">
         
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-xs md:text-sm font-semibold flex items-center gap-2 shadow-sm animate-[fadeIn_0.2s_ease-out]">
+            <AlertCircle size={16} className="flex-shrink-0" />
+            <span>{errorMsg}</span>
+            <button type="button" onClick={() => setErrorMsg("")} className="ml-auto hover:opacity-75 text-red-400 text-xs cursor-pointer font-bold border-none bg-transparent">✕</button>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl text-xs md:text-sm font-semibold flex items-center gap-2 shadow-sm animate-[fadeIn_0.2s_ease-out]">
+            <Check size={16} className="flex-shrink-0" />
+            <span>{successMsg}</span>
+            <button type="button" onClick={() => setSuccessMsg("")} className="ml-auto hover:opacity-75 text-emerald-400 text-xs cursor-pointer font-bold border-none bg-transparent">✕</button>
+          </div>
+        )}
+
         {/* Instagram Profile Header */}
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-16 pb-10 border-b border-gray-150">
           
