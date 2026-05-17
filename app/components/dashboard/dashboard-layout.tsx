@@ -3,24 +3,27 @@
 import React, { useState } from "react";
 import Sidebar from "./sidebar";
 import Header from "./header";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/app/lib/utils";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
-  // Show greeting header ONLY on the primary dashboard page
-  const hideHeader = pathname !== "/dashboard";
+  const isDashboard = pathname === "/dashboard";
+  const hideHeader = !isDashboard;
 
   return (
     <div className="flex min-h-screen bg-[#f8fafb]">
-      {/* Desktop Sidebar (hidden on mobile) */}
-      <div className="hidden lg:block shrink-0">
-        <Sidebar />
-      </div>
+      {/* Desktop Sidebar (hidden on mobile, and hidden on non-dashboard pages for full-screen immersive view) */}
+      {isDashboard && (
+        <div className="hidden lg:block shrink-0">
+          <Sidebar />
+        </div>
+      )}
 
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
@@ -59,14 +62,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-        {/* Mobile Header Toggle */}
-        <div className="lg:hidden absolute top-5 left-4 z-[60]">
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="w-10 h-10 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center text-gray-800 hover:bg-gray-50 active:scale-95 transition-all"
-          >
-            <Menu size={20} />
-          </button>
+        {/* Navigation Action Trigger (Hamburger Menu on Dashboard, Back Arrow on subpages) */}
+        <div className="absolute top-5 left-4 z-[60]">
+          {isDashboard ? (
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="w-10 h-10 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center text-gray-800 hover:bg-gray-50 active:scale-95 transition-all lg:hidden cursor-pointer"
+              title="Open Menu"
+            >
+              <Menu size={20} />
+            </button>
+          ) : (
+            <button 
+              onClick={() => router.push("/dashboard")}
+              className="w-10 h-10 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center text-gray-800 hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
+              title="Back to Dashboard"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
         </div>
 
         {!hideHeader && <Header />}
