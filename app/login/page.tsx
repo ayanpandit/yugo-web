@@ -91,10 +91,14 @@ export default function LoginPage() {
           
           {/* Brand Logo Header */}
           <header className="flex items-center gap-3 animate-[fadeIn_0.5s_ease-out]">
-            <div className="h-10 w-10 bg-[#006644] rounded-xl flex items-center justify-center shadow-lg shadow-emerald-950/10">
-              <Compass className="h-5.5 w-5.5 text-white stroke-[2.25]" />
+            <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-md border border-gray-100 shrink-0">
+              <img 
+                src="/icon-192.png" 
+                alt="YouGO Icon" 
+                className="w-full h-full object-cover p-1.5"
+              />
             </div>
-            <span className="text-2xl font-black tracking-tight text-gray-900">
+            <span className="text-2xl font-black tracking-tight text-gray-900 select-none">
               You<span className="text-[#006644]">GO</span>
             </span>
           </header>
