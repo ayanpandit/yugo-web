@@ -232,61 +232,82 @@ export default function ProfileContent() {
         )}
 
         {/* Instagram Profile Header */}
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-16 pb-10 border-b border-gray-150">
+        <div className="flex flex-col md:flex-row items-start gap-6 md:gap-16 pb-8 md:pb-10 border-b border-gray-150">
           
-          {/* Large Left circular avatar */}
-          <div className="flex-shrink-0">
-            <div className="relative group">
-              <div 
-                onClick={handleImageChangeClick}
-                className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-0.5 shadow-md cursor-pointer transition-all hover:rotate-6"
-              >
-                <div className="w-full h-full rounded-full bg-white p-1 relative overflow-hidden">
-                  {uploadingImage ? (
-                    <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center text-xs text-green-600 font-bold animate-pulse">
-                      <span>Uploading...</span>
-                    </div>
-                  ) : user.image ? (
-                    <img 
-                      src={user.image} 
-                      alt={user.name || user.username} 
-                      className="w-full h-full rounded-full object-cover" 
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-4xl md:text-5xl shadow-inner select-none font-bold text-green-700">
-                      {user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+          {/* Avatar and Stats Row container (stacked horizontally on mobile) */}
+          <div className="flex items-center gap-6 md:gap-16 w-full md:w-auto">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              <div className="relative group">
+                <div 
+                  onClick={handleImageChangeClick}
+                  className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-0.5 shadow-md cursor-pointer transition-all hover:rotate-6"
+                >
+                  <div className="w-full h-full rounded-full bg-white p-0.5 sm:p-1 relative overflow-hidden">
+                    {uploadingImage ? (
+                      <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center text-[10px] sm:text-xs text-green-600 font-bold animate-pulse">
+                        <span>Uploading...</span>
+                      </div>
+                    ) : user.image ? (
+                      <img 
+                        src={user.image} 
+                        alt={user.name || user.username} 
+                        className="w-full h-full rounded-full object-cover" 
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl sm:text-4xl md:text-5xl shadow-inner select-none font-bold text-green-700">
+                        {user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                 </div>
+                <div 
+                  onClick={handleImageChangeClick}
+                  className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] sm:text-xs font-semibold cursor-pointer"
+                >
+                  {uploadingImage ? "Processing..." : "Change Photo"}
+                </div>
+                
+                {/* Hidden file input */}
+                <input 
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingImage}
+                />
               </div>
-              <div 
-                onClick={handleImageChangeClick}
-                className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold cursor-pointer"
-              >
-                {uploadingImage ? "Processing..." : "Change Photo"}
+            </div>
+
+            {/* Mobile-Only Stats (Horizontal stack on the right side of avatar) */}
+            <div className="flex flex-1 justify-around items-center md:hidden pt-1">
+              <div className="flex flex-col items-center">
+                <span className="font-extrabold text-gray-900 text-sm sm:text-base">12</span>
+                <span className="text-gray-400 text-[10px] sm:text-xs font-light">trips</span>
               </div>
-              
-              {/* Hidden file input */}
-              <input 
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-                disabled={uploadingImage}
-              />
+              <div className="flex flex-col items-center">
+                <span className="font-extrabold text-gray-900 text-sm sm:text-base">8</span>
+                <span className="text-gray-400 text-[10px] sm:text-xs font-light">cities</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="font-extrabold text-gray-900 text-sm sm:text-base">47</span>
+                <span className="text-gray-400 text-[10px] sm:text-xs font-light">travelers</span>
+              </div>
             </div>
           </div>
 
           {/* Right Profile Meta Section */}
-          <div className="flex-1 space-y-5 md:space-y-6 w-full text-center md:text-left">
+          <div className="flex-1 space-y-4 md:space-y-6 w-full text-left">
             
-            {/* Top row: Username + buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <h2 className="text-xl md:text-2xl font-light text-gray-800 tracking-wide font-sans">
+            {/* Top row: Username + Desktop buttons */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <h2 className="text-xl md:text-2xl font-light text-gray-800 tracking-wide font-sans text-left">
                 @{user.username}
               </h2>
-              <div className="flex items-center gap-3">
+              
+              {/* Desktop-only action buttons (hidden below sm) */}
+              <div className="hidden sm:flex items-center gap-3">
                 <button 
                   onClick={() => setIsEditing(!isEditing)}
                   className="px-6 py-1.5 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer"
@@ -303,8 +324,8 @@ export default function ProfileContent() {
               </div>
             </div>
 
-            {/* Stats row */}
-            <div className="flex items-center justify-center md:justify-start gap-8 md:gap-12 py-1">
+            {/* Desktop-Only Stats Row (hidden on mobile) */}
+            <div className="hidden md:flex items-center justify-start gap-12 py-1">
               <div className="text-sm md:text-base">
                 <span className="font-bold text-gray-900">12 </span>
                 <span className="text-gray-500 font-light">trips planned</span>
@@ -319,25 +340,25 @@ export default function ProfileContent() {
               </div>
             </div>
 
-            {/* Info bio / description row */}
+            {/* Info bio / description row - ALWAYS left-aligned */}
             {!isEditing ? (
-              <div className="space-y-3 font-sans max-w-lg">
-                <h3 className="font-bold text-gray-900 text-sm md:text-base">
+              <div className="space-y-2 md:space-y-3 font-sans w-full text-left">
+                <h3 className="font-bold text-gray-900 text-sm md:text-base text-left">
                   {user.name || "Traveller Name"}
                 </h3>
                 {user.bio ? (
-                  <p className="text-gray-600 text-sm font-light leading-relaxed whitespace-pre-wrap">
+                  <p className="text-gray-600 text-sm font-light leading-relaxed whitespace-pre-wrap text-left">
                     {user.bio}
                   </p>
                 ) : (
-                  <p className="text-gray-300 text-xs italic font-light">No bio added yet.</p>
+                  <p className="text-gray-300 text-xs italic font-light text-left">No bio added yet.</p>
                 )}
 
                 {/* Badges and tags */}
-                <div className="pt-2 space-y-2">
+                <div className="pt-1 space-y-1.5 text-left">
                   {/* Location */}
                   {(user.city || user.country) && (
-                    <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs text-gray-500 font-medium">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium justify-start">
                       <MapPin size={14} className="text-gray-400" />
                       <span>
                         {[user.city, user.country].filter(Boolean).join(", ")}
@@ -347,7 +368,7 @@ export default function ProfileContent() {
 
                   {/* Travel style */}
                   {user.travelStyle && (
-                    <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs text-[#006644] font-bold">
+                    <div className="flex items-center gap-1.5 text-xs text-[#006644] font-bold justify-start">
                       <Sparkles size={14} className="text-green-500" />
                       <span>Style: {user.travelStyle}</span>
                     </div>
@@ -355,7 +376,7 @@ export default function ProfileContent() {
 
                   {/* Interests */}
                   {user.interests && user.interests.length > 0 && (
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 pt-1">
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1 justify-start">
                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Interests:</span>
                       {user.interests.map((interest: string, i: number) => (
                         <span 
@@ -370,7 +391,7 @@ export default function ProfileContent() {
 
                   {/* Languages */}
                   {user.languages && user.languages.length > 0 && (
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5 justify-start">
                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Languages:</span>
                       {user.languages.map((lang: string, i: number) => (
                         <span 
@@ -385,6 +406,25 @@ export default function ProfileContent() {
                 </div>
               </div>
             ) : null}
+
+            {/* Mobile-only action buttons (visible below sm) */}
+            <div className="flex sm:hidden items-center gap-2 w-full pt-3">
+              <button 
+                onClick={() => setIsEditing(!isEditing)}
+                className="flex-1 py-2 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer"
+              >
+                {isEditing ? "Cancel" : "Edit Profile"}
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="px-3 py-2 bg-white border border-gray-250 text-red-500 hover:bg-red-50 active:scale-[0.98] rounded-lg shadow-sm transition-all flex items-center justify-center cursor-pointer"
+                title="Sign Out"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+
+          </div>
 
           </div>
         </div>
@@ -628,7 +668,7 @@ export default function ProfileContent() {
 
         {/* Instagram style Tabs navigation */}
         <div className="mt-10">
-          <div className="flex items-center justify-center gap-12 border-t border-gray-150">
+          <div className="flex items-center justify-center gap-12">
             <button
               onClick={() => setActiveTab("trips")}
               className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
