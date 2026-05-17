@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { 
   User, 
   Mail, 
@@ -19,16 +19,63 @@ import {
   AlertCircle 
 } from "lucide-react";
 import { useAuth } from "@/app/components/providers/auth-provider";
-import { apiFetch } from "@/app/lib/api";
+import { apiFetch, API_URL } from "@/app/lib/api";
 import { useRouter } from "next/navigation";
 
 export default function ProfileContent() {
   const { user, refreshSession } = useAuth();
   const router = useRouter();
   
+  // Avatar upload ref and state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<"trips" | "saved" | "tagged">("trips");
+
+  const handleImageChangeClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      
+      // Direct call to Hono backend profile image upload route
+      const res = await fetch(`${API_URL}/auth/profile/image`, {
+        method: "POST",
+        headers: {
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        setSuccessMsg("Profile picture updated successfully!");
+        await refreshSession();
+      } else {
+        setErrorMsg(result.message || "Failed to upload image.");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      setErrorMsg("An error occurred during upload. Please try again.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
   
   // Form states
   const [name, setName] = useState(user?.name || "");
@@ -174,16 +221,44 @@ export default function ProfileContent() {
           {/* Large Left circular avatar */}
           <div className="flex-shrink-0">
             <div className="relative group">
-              <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-0.5 shadow-md">
-                <div className="w-full h-full rounded-full bg-white p-1">
-                  <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-4xl md:text-5xl shadow-inner select-none font-bold">
-                    {user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
-                  </div>
+              <div 
+                onClick={handleImageChangeClick}
+                className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-0.5 shadow-md cursor-pointer transition-all hover:rotate-6"
+              >
+                <div className="w-full h-full rounded-full bg-white p-1 relative overflow-hidden">
+                  {uploadingImage ? (
+                    <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center text-xs text-green-600 font-bold animate-pulse">
+                      <span>Uploading...</span>
+                    </div>
+                  ) : user.image ? (
+                    <img 
+                      src={user.image} 
+                      alt={user.name || user.username} 
+                      className="w-full h-full rounded-full object-cover" 
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-4xl md:text-5xl shadow-inner select-none font-bold text-green-700">
+                      {user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold cursor-pointer">
-                Change Photo
+              <div 
+                onClick={handleImageChangeClick}
+                className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold cursor-pointer"
+              >
+                {uploadingImage ? "Processing..." : "Change Photo"}
               </div>
+              
+              {/* Hidden file input */}
+              <input 
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImage}
+              />
             </div>
           </div>
 
