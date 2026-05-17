@@ -2,6 +2,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/components/providers/auth-provider";
 const bgVideo = "/final_home/hero/back_vid.mp4";
 const img1 = "/final_home/hero/medium-shot-couple-hiking-together.jpg";
 const img2 = "/final_home/hero/joyful-family-picnic-around-burning-coal-generated-by-ai.jpg";
@@ -46,13 +48,24 @@ const floatingImages = [
 ];
 
 export default function HeroSection() {
+    const { user } = useAuth();
+    const router = useRouter();
     const [loaded, setLoaded] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [bookHovered, setBookHovered] = useState(false);
-
+ 
     const handleMouseEnter = () => setIsHovered(true);
     const handleMouseLeave = () => setIsHovered(false);
+ 
+    const handleExploreClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (user) {
+            router.push("/dashboard");
+        } else {
+            router.push("/login");
+        }
+    };
 
     useEffect(() => {
         const t = setTimeout(() => setLoaded(true), 80);
@@ -243,7 +256,9 @@ export default function HeroSection() {
                 </p>
 
                 {/* Button */}
-                <div
+                <Link
+                    href="/explore"
+                    onClick={handleExploreClick}
                     className="hero2-btn flex items-center cursor-pointer mt-8 overflow-hidden border border-white bg-transparent mx-auto"
                     style={{ borderRadius: "20px", width: "210px", height: "54px", fontFamily: 'Funnel Display, sans-serif', fontWeight: 500, fontSize: "1.1rem" }}
                     onMouseEnter={handleMouseEnter}
@@ -299,7 +314,7 @@ export default function HeroSection() {
                             </svg>
                         </div>
                     </div>
-                </div>
+                </Link>
             </main>
 
             {/* ── Stats bar ── */}

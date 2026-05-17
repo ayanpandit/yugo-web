@@ -20,6 +20,15 @@ This document explains the project structure, tech stack, and where key code liv
   - layout.tsx: Root layout, metadata, fonts, and HTML/body scaffold. Wraps app with AuthProvider.
   - page.tsx: Home route entry point.
   - globals.css: Global styles and Tailwind import.
+  - login/
+    - page.tsx: Credentials authentication gateway.
+  - register/
+    - page.tsx: User registration form.
+  - verify-email/
+    - page.tsx: Interactive email verification hub.
+  - profile/
+    - page.tsx: Instagram-style profile dashboard page.
+    - profile-content.tsx: Interactive profile layout & editor.
   - dashboard/
     - page.tsx: Main dashboard view with discover world and events.
   - discover/
@@ -128,6 +137,17 @@ The sidebar and protected routes are driven by `app/lib/navigation.ts`. Each `Na
 Following the project's modular pattern, the dashboard uses a layout-first approach:
 1. `app/components/dashboard/dashboard-layout.tsx` composes the `Sidebar`, `Header`, and the main content area.
 2. Pages (e.g., `app/dashboard/page.tsx`) are wrapped in this layout to maintain consistency.
+
+### Authentication & Profile Hub
+- **Authentication Gateway (`/login` & `/register`)**:
+  - Center-based, responsive split-screen pages managing user credentials, secure cookie sessions, and password hashing matches.
+  - Enhanced with intelligent "Back to Home" navigation routing.
+- **Verification Page (`/verify-email`)**:
+  - Interactive page that automatically captures verification tokens from url parameters, validates status with `/auth/verify-email` endpoint, and provides visual confirmation (success tick or failed tokens).
+- **Instagram-Style Profile (`/profile`)**:
+  - A modern dashboard page structured strictly like Instagram's profile layout.
+  - Contains **Traveler Stats** (Trips, Cities, Travelers), **Bio paragraphs**, and dynamic pill-badges for **Travel Style**, **Interests**, and **Languages**.
+  - Includes a togglable **Inline Editor Form** to update user parameters (checking username uniqueness in real-time) while safely disabling/locking core credential edits (Email/Password) for security compliance.
 
 ## Scripts
 

@@ -2,19 +2,32 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { SIDEBAR_CONFIG, MOCK_USER } from "@/app/lib/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { SIDEBAR_CONFIG } from "@/app/lib/navigation";
 import { cn } from "@/app/lib/utils";
 import { LogOut } from "lucide-react";
 import Image from "next/image";
+import { useAuth } from "@/app/components/providers/auth-provider";
+import { apiFetch } from "@/app/lib/api";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const userRole = MOCK_USER.role;
+  const router = useRouter();
+  const { userRole, refreshSession } = useAuth();
 
   const filteredNav = SIDEBAR_CONFIG.filter((item) =>
     item.roles.includes(userRole)
   );
+
+  const handleLogout = async () => {
+    try {
+      await apiFetch("/auth/logout", { method: "POST" });
+      await refreshSession();
+      router.push("/login");
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  };
 
   return (
     <aside className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col p-6 sticky top-0">
@@ -82,7 +95,10 @@ export default function Sidebar() {
       </div>
 
       {/* Logout */}
-      <button className="flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-red-500 transition-colors">
+      <button 
+        onClick={handleLogout}
+        className="flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-red-500 transition-colors cursor-pointer w-full text-left"
+      >
         <LogOut size={20} />
         <span className="font-medium">Logout</span>
       </button>
