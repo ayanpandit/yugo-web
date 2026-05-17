@@ -31,7 +31,12 @@ export default function LoginPage() {
       if (!res.ok) {
         throw new Error(data.message || "Failed to login");
       }
-
+      
+      // Store token in localStorage as a fallback for cross-site cookie restrictions
+      if (data.data?.token) {
+        localStorage.setItem("token", data.data.token);
+      }
+      
       await refreshSession();
       router.push("/dashboard");
     } catch (err: any) {
