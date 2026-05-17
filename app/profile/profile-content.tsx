@@ -34,14 +34,142 @@ export default function ProfileContent() {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<"trips" | "saved" | "tagged">("trips");
 
+  // Cropper states
+  const [croppingImageSrc, setCroppingImageSrc] = useState<string | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const cropperContainerRef = useRef<HTMLDivElement>(null);
+  const cropperImageRef = useRef<HTMLImageElement>(null);
+
   const handleImageChangeClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Load selected image file as base64 for interactive cropping
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCroppingImageSrc(reader.result as string);
+      setCropZoom(1);
+      setCropOffset({ x: 0, y: 0 });
+    };
+    reader.readAsDataURL(file);
+    
+    // Clear input so selecting same image again triggers onChange
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Drag pan controls (Mouse support)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - cropOffset.x, y: e.clientY - cropOffset.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setCropOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Drag pan controls (Touch support for mobile)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    setIsDragging(true);
+    const touch = e.touches[0];
+    setDragStart({ x: touch.clientX - cropOffset.x, y: touch.clientY - cropOffset.y });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    setCropOffset({
+      x: touch.clientX - dragStart.x,
+      y: touch.clientY - dragStart.y
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Canvas cropping logic & JPEG generation
+  const handleApplyCrop = async () => {
+    if (!croppingImageSrc || !cropperImageRef.current || !cropperContainerRef.current) return;
+    
+    setUploadingImage(true);
+    setCroppingImageSrc(null); // Close modal right away to show main loader
+    
+    try {
+      const img = cropperImageRef.current;
+      const container = cropperContainerRef.current;
+      
+      const canvas = document.createElement("canvas");
+      canvas.width = 400;
+      canvas.height = 400;
+      const ctx = canvas.getContext("2d");
+      
+      if (!ctx) throw new Error("Could not get 2D canvas context");
+      
+      const containerRect = container.getBoundingClientRect();
+      const imgRect = img.getBoundingClientRect();
+      
+      const scaleX = img.naturalWidth / imgRect.width;
+      const scaleY = img.naturalHeight / imgRect.height;
+      
+      const cropSize = Math.min(containerRect.width, containerRect.height);
+      const cropX = (containerRect.width - cropSize) / 2;
+      const cropY = (containerRect.height - cropSize) / 2;
+      
+      const sx = (cropX - (imgRect.left - containerRect.left)) * scaleX;
+      const sy = (cropY - (imgRect.top - containerRect.top)) * scaleY;
+      const sWidth = cropSize * scaleX;
+      const sHeight = cropSize * scaleY;
+      
+      ctx.drawImage(
+        img,
+        sx,
+        sy,
+        sWidth,
+        sHeight,
+        0,
+        0,
+        400,
+        400
+      );
+      
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          setErrorMsg("Failed to generate cropped image.");
+          setUploadingImage(false);
+          return;
+        }
+        
+        const croppedFile = new File([blob], "cropped_profile.jpg", { type: "image/jpeg" });
+        await uploadCroppedImage(croppedFile);
+      }, "image/jpeg", 0.9);
+      
+    } catch (err) {
+      console.error("Cropping calculation failed:", err);
+      setErrorMsg("Failed to process image cropping.");
+      setUploadingImage(false);
+    }
+  };
+
+  const uploadCroppedImage = async (file: File) => {
     setUploadingImage(true);
     setErrorMsg("");
     setSuccessMsg("");
@@ -52,7 +180,6 @@ export default function ProfileContent() {
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       
-      // Direct call to Hono backend profile image upload route
       const res = await fetch(`${API_URL}/auth/profile/image`, {
         method: "POST",
         headers: {
@@ -70,7 +197,7 @@ export default function ProfileContent() {
         setErrorMsg(result.message || "Failed to upload image.");
       }
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Upload failed:", error);
       setErrorMsg("An error occurred during upload. Please try again.");
     } finally {
       setUploadingImage(false);
@@ -769,6 +896,103 @@ export default function ProfileContent() {
             )}
           </div>
         </div>
+
+        {/* Instagram Style Cropper Modal */}
+        {croppingImageSrc && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
+            <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-100 flex flex-col animate-[scaleIn_0.2s_ease-out]">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <button 
+                  type="button" 
+                  onClick={() => setCroppingImageSrc(null)}
+                  className="text-gray-500 hover:text-gray-700 text-sm font-semibold cursor-pointer border-none bg-transparent"
+                >
+                  Cancel
+                </button>
+                <h3 className="font-extrabold text-gray-900 text-sm tracking-wide">
+                  Crop Photo
+                </h3>
+                <button 
+                  type="button" 
+                  onClick={handleApplyCrop}
+                  className="text-blue-500 hover:text-blue-600 text-sm font-bold cursor-pointer border-none bg-transparent"
+                >
+                  Apply
+                </button>
+              </div>
+
+              {/* Cropper Container */}
+              <div 
+                ref={cropperContainerRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUpOrLeave}
+                onMouseLeave={handleMouseUpOrLeave}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="relative aspect-square w-full bg-zinc-950 overflow-hidden cursor-move select-none flex items-center justify-center"
+              >
+                <img 
+                  ref={cropperImageRef}
+                  src={croppingImageSrc}
+                  alt="Crop Preview"
+                  draggable={false}
+                  className="max-w-none max-h-none pointer-events-none"
+                  style={{
+                    transform: `translate(${cropOffset.x}px, ${cropOffset.y}px) scale(${cropZoom})`,
+                    transition: isDragging ? "none" : "transform 0.1s ease-out",
+                    width: "100%",
+                    height: "auto",
+                  }}
+                />
+
+                {/* Circular Crop Guide Mask overlay */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  <div className="w-full h-full border-[40px] border-zinc-950/70 relative overflow-hidden">
+                    <div className="absolute inset-0 rounded-full border border-white/50 shadow-[0_0_0_9999px_rgba(24,24,27,0.65)]" />
+                  </div>
+                </div>
+                
+                {/* Visual grid guide lines (fades on hover/interaction) */}
+                {isDragging && (
+                  <div className="absolute inset-0 pointer-events-none border-[40px] border-transparent flex flex-col justify-between p-0.5">
+                    <div className="flex-grow border-y border-dashed border-white/30 flex justify-between">
+                      <div className="w-1/3 h-full border-r border-dashed border-white/30" />
+                      <div className="w-1/3 h-full border-r border-dashed border-white/30" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Slider Controls */}
+              <div className="p-6 space-y-4 bg-gray-50 border-t border-gray-100">
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-400 text-xs select-none">🔍</span>
+                  <input 
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.01"
+                    value={cropZoom}
+                    onChange={(e) => setCropZoom(parseFloat(e.target.value))}
+                    className="flex-1 accent-blue-500 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer outline-none"
+                  />
+                  <span className="text-gray-400 text-xs font-bold w-8 text-right select-none">
+                    {Math.round(cropZoom * 100)}%
+                  </span>
+                </div>
+                
+                <p className="text-[10px] text-gray-400 font-medium text-center select-none">
+                  Drag the photo to pan and adjust. Use the slider to zoom.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
