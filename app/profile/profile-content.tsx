@@ -43,6 +43,38 @@ export default function ProfileContent() {
   const cropperContainerRef = useRef<HTMLDivElement>(null);
   const cropperImageRef = useRef<HTMLImageElement>(null);
 
+  // Long-press avatar preview peek states
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressActiveRef = useRef(false);
+
+  const startLongPress = (e: React.MouseEvent | React.TouchEvent) => {
+    isLongPressActiveRef.current = false;
+    
+    longPressTimeoutRef.current = setTimeout(() => {
+      setIsPreviewOpen(true);
+      isLongPressActiveRef.current = true;
+      if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(15);
+      }
+    }, 500); // 500ms long press threshold
+  };
+
+  const endLongPress = () => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+    }
+    setIsPreviewOpen(false);
+  };
+
+  const handleAvatarClick = () => {
+    if (isLongPressActiveRef.current) {
+      isLongPressActiveRef.current = false;
+      return;
+    }
+    handleImageChangeClick();
+  };
+
   const handleImageChangeClick = () => {
     fileInputRef.current?.click();
   };
@@ -367,8 +399,15 @@ export default function ProfileContent() {
             <div className="flex-shrink-0">
               <div className="relative group">
                 <div 
-                  onClick={handleImageChangeClick}
-                  className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-0.5 shadow-md cursor-pointer transition-all hover:rotate-6"
+                  onMouseDown={startLongPress}
+                  onMouseUp={endLongPress}
+                  onMouseLeave={endLongPress}
+                  onTouchStart={startLongPress}
+                  onTouchEnd={endLongPress}
+                  onTouchCancel={endLongPress}
+                  onClick={handleAvatarClick}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-0.5 shadow-md cursor-pointer transition-all hover:rotate-6 select-none"
                 >
                   <div className="w-full h-full rounded-full bg-white p-0.5 sm:p-1 relative overflow-hidden">
                     {uploadingImage ? (
@@ -389,8 +428,7 @@ export default function ProfileContent() {
                   </div>
                 </div>
                 <div 
-                  onClick={handleImageChangeClick}
-                  className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] sm:text-xs font-semibold cursor-pointer"
+                  className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] sm:text-xs font-semibold cursor-pointer pointer-events-none"
                 >
                   {uploadingImage ? "Processing..." : "Change Photo"}
                 </div>
@@ -896,6 +934,47 @@ export default function ProfileContent() {
             )}
           </div>
         </div>
+
+        {/* Instagram Profile Picture Peek Preview Modal */}
+        {isPreviewOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-[fadeIn_0.15s_ease-out]">
+            <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-150 w-full max-w-sm flex flex-col items-center p-6 animate-[scaleIn_0.15s_ease-out] relative">
+              {/* Upper User Tag Header */}
+              <div className="flex items-center gap-3 w-full pb-4 border-b border-gray-100">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-50 border border-gray-150">
+                  {user.image ? (
+                    <img src={user.image} alt={user.username} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-xs font-bold text-green-700">
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <span className="font-extrabold text-gray-900 text-sm">@{user.username}</span>
+              </div>
+
+              {/* Large Expanded High-Res Picture */}
+              <div className="w-full aspect-square mt-4 rounded-2xl overflow-hidden bg-zinc-950 shadow-inner flex items-center justify-center border border-gray-100">
+                {user.image ? (
+                  <img 
+                    src={user.image} 
+                    alt={user.name || user.username} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-emerald-50 flex items-center justify-center text-7xl font-extrabold text-green-700">
+                    {user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              {/* Action instruction tag */}
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-4">
+                Release finger to close preview
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Instagram Style Cropper Modal */}
         {croppingImageSrc && (
