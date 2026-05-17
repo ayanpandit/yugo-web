@@ -42,7 +42,7 @@ export default function Sidebar() {
         />
         <span className="text-2xl font-extrabold tracking-tight">
           <span className="text-gray-800">You</span>
-          <span className="text-blue-500">GO</span>
+          <span className="text-[#006644]">GO</span>
         </span>
       </div>
 

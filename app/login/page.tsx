@@ -94,8 +94,8 @@ export default function LoginPage() {
             <div className="h-10 w-10 bg-[#006644] rounded-xl flex items-center justify-center shadow-lg shadow-emerald-950/10">
               <Compass className="h-5.5 w-5.5 text-white stroke-[2.25]" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-[#006644]">
-              Travenly
+            <span className="text-2xl font-black tracking-tight text-gray-900">
+              You<span className="text-[#006644]">GO</span>
             </span>
           </header>
 
