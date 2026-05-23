@@ -17,15 +17,15 @@ export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
   const tripType = trip.tripType || "Leisure";
   const totalDays = trip.totalDays ? `${trip.totalDays} Days` : "Multi-Day";
   const experienceType = trip.experienceType || "Unspecified";
-  const perPersonCost = trip.perPersonCost 
+  const perPersonCost = trip.perPersonCost
     ? `₹${trip.perPersonCost.toLocaleString()}`
     : "Price on Request";
-  
+
   const creatorUsername = trip.creator.username || "Anonymous Traveler";
   const creatorAvatar = trip.creator.image ? (
-    <img 
-      src={trip.creator.image} 
-      alt={creatorUsername} 
+    <img
+      src={trip.creator.image}
+      alt={creatorUsername}
       className="w-full h-full object-cover rounded-full"
       loading="lazy"
     />
@@ -40,10 +40,10 @@ export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
       <div>
         {/* Cover Image */}
         <div className="relative h-48 md:h-52 rounded-2xl overflow-hidden mb-4">
-          <img 
-            src={coverImage} 
-            alt={destination} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+          <img
+            src={coverImage}
+            alt={destination}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy" // Optimized image rendering (Rule 13)
           />
           <button className="absolute top-4 right-4 w-9 h-9 md:w-10 md:h-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-white hover:text-red-500 transition-all">
@@ -75,9 +75,9 @@ export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
           </div>
 
           <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight group-hover:text-green-500 transition-colors line-clamp-2">
-            Trip to {destination}
+            {destination}
           </h3>
-          
+
           <div className="flex flex-col gap-1 md:gap-1.5">
             <div className="flex items-center gap-1.5 text-gray-400 text-[10px] md:text-[11px]">
               <MapPin size={12} className="text-gray-300" />
@@ -99,7 +99,7 @@ export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
           </span>
           <span className="text-gray-300 text-[9px] md:text-[10px] font-medium -mt-1">Estimated Cost</span>
         </div>
-        <button 
+        <button
           onClick={() => onViewDetails?.(trip.tripId)}
           className="w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all bg-green-50 text-green-500 border border-green-50 hover:bg-green-500 hover:text-white"
         >

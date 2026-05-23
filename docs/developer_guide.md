@@ -148,6 +148,11 @@ Following the project's modular pattern, the dashboard uses a layout-first appro
   - A modern dashboard page structured strictly like Instagram's profile layout.
   - Contains **Traveler Stats** (Trips, Cities, Travelers), **Bio paragraphs**, and dynamic pill-badges for **Travel Style**, **Interests**, and **Languages**.
   - Includes a togglable **Inline Editor Form** to update user parameters (checking username uniqueness in real-time) while safely disabling/locking core credential edits (Email/Password) for security compliance.
+- **Zustand Feed Store & Discovery Flow (`/explore`)**:
+  - **Centralized Feed State**: Managed inside `app/store/feed.store.ts` using Zustand to coordinate discovery feed items (`trips`), loading, and error states globally.
+  - **Decoupled API Fetching**: Handled inside `app/services/feed.service.ts` using the secure `apiFetch` utility, completely separating HTTP fetching logic from UI layers.
+  - **Lightweight Feed Cards**: The `/explore` route maps modular, performance-optimized cards (`app/components/feed/feed-card.tsx`) using native Next.js lazy-loading. Incorporates robust UI fallbacks for null/missing database values (cover banners, destinations, experience types, and initial-based avatars).
+  - **Skeleton Loaders**: Custom skeleton cards (`app/components/feed/feed-skeleton.tsx`) render pulsing gradient placeholder segments to maintain premium layout stability during connection delays.
 
 ## Scripts
 
