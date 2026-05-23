@@ -1,58 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "../components/dashboard/dashboard-layout";
-import { Search, Filter, MapPin, Calendar, Users, ChevronRight, Star, Heart } from "lucide-react";
-import { cn } from "@/app/lib/utils";
+import { Search, Filter, Calendar, Users, RefreshCw } from "lucide-react";
+import { useFeedStore } from "../store/feed.store";
+import FeedCard from "../components/feed/feed-card";
+import FeedSkeleton from "../components/feed/feed-skeleton";
 
 export default function ExplorePage() {
-  const trips = [
-    {
-      id: 1,
-      title: "Summer Vibes in Bali",
-      author: "Sarah Jenkins",
-      authorAvatar: "👩‍🦳",
-      location: "Bali, Indonesia",
-      date: "July 15 - July 25",
-      price: 1200,
-      rating: 4.9,
-      reviews: 24,
-      slots: 4,
-      maxSlots: 6,
-      image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=600",
-      tags: ["Beach", "Yoga", "Relax"]
-    },
-    {
-      id: 2,
-      title: "Alpine Hiking Adventure",
-      author: "Marc Roiss",
-      authorAvatar: "👨‍",
-      location: "Swiss Alps, Switzerland",
-      date: "August 05 - August 12",
-      price: 2100,
-      rating: 5.0,
-      reviews: 12,
-      slots: 2,
-      maxSlots: 4,
-      image: "https://images.unsplash.com/photo-1531315630201-bb15abeb1653?auto=format&fit=crop&q=80&w=600",
-      tags: ["Hiking", "Mountain", "Extreme"]
-    },
-    {
-      id: 3,
-      title: "Tokyo Nightlife & Food",
-      author: "Kenji Sato",
-      authorAvatar: "👨‍🍳",
-      location: "Tokyo, Japan",
-      date: "Sept 10 - Sept 18",
-      price: 1850,
-      rating: 4.8,
-      reviews: 45,
-      slots: 8,
-      maxSlots: 10,
-      image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&q=80&w=600",
-      tags: ["Food", "City", "Nightlife"]
-    }
-  ];
+  const router = useRouter();
+  const { trips, loading, error, fetchFeed } = useFeedStore();
+
+  useEffect(() => {
+    fetchFeed();
+  }, [fetchFeed]);
+
+  const handleViewDetails = (tripId: string) => {
+    // Navigate to the AI planner details view (decoupled detail view - Rule 6, 16)
+    router.push(`/ai-planner?id=${tripId}`);
+  };
 
   return (
     <DashboardLayout>
@@ -100,67 +67,53 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* Trips Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trips.map((trip) => (
-            <div key={trip.id} className="group relative bg-white rounded-[32px] p-4 shadow-sm border border-gray-50 hover:shadow-xl transition-all cursor-pointer overflow-hidden min-h-[420px]">
-              <div className="relative h-48 md:h-52 rounded-2xl overflow-hidden mb-4">
-                <img src={trip.image} alt={trip.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <button className="absolute top-4 right-4 w-9 h-9 md:w-10 md:h-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-white hover:text-red-500 transition-all">
-                  <Heart size={18} />
-                </button>
-                <div className="absolute bottom-4 left-4 flex gap-1.5">
-                   {trip.tags.slice(0, 2).map((tag, i) => (
-                     <span key={i} className="px-2.5 py-1 bg-black/40 backdrop-blur-md rounded-lg text-[8px] md:text-[9px] text-white font-bold uppercase tracking-wider border border-white/20">
-                        {tag}
-                     </span>
-                   ))}
-                </div>
-              </div>
-
-              <div className="px-1 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                     <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-[10px] md:text-xs">{trip.authorAvatar}</div>
-                     <span className="text-[10px] md:text-[11px] font-bold text-gray-800">{trip.author}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-[9px] md:text-[10px] font-bold text-gray-800 bg-gray-50 px-2 py-1 rounded-lg">
-                     <Star className="text-yellow-400 fill-yellow-400" size={10} />
-                     <span>{trip.rating}</span>
-                  </div>
-                </div>
-
-                <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight group-hover:text-green-500 transition-colors line-clamp-2">{trip.title}</h3>
-                
-                <div className="flex flex-col gap-1 md:gap-1.5">
-                  <div className="flex items-center gap-1.5 text-gray-400 text-[10px] md:text-[11px]">
-                     <MapPin size={12} className="text-gray-300" />
-                     <span className="truncate">{trip.location}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-gray-400 text-[10px] md:text-[11px]">
-                     <Users size={12} className="text-gray-300" />
-                     <span>{trip.slots}/{trip.maxSlots} slots filled</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex flex-col">
-                    <span className="text-green-500 font-bold text-base md:text-lg">
-                      ${trip.price}
-                    </span>
-                    <span className="text-gray-300 text-[9px] md:text-[10px] font-medium -mt-1">Estimated Cost</span>
-                  </div>
-                  <button className={cn(
-                    "w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all bg-green-50 text-green-500 border border-green-50 hover:bg-green-500 hover:text-white"
-                  )}>
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
+        {/* Dynamic Feed View */}
+        {loading ? (
+          <FeedSkeleton />
+        ) : error ? (
+          // Rich aesthetic Retry State (Rule 8)
+          <div className="bg-white rounded-[32px] border border-gray-50 p-8 text-center max-w-md mx-auto space-y-4 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto text-red-500">
+              ⚠️
             </div>
-          ))}
-        </div>
+            <h3 className="font-bold text-gray-800 text-lg">Unable to load feed</h3>
+            <p className="text-gray-400 text-xs md:text-sm leading-relaxed">{error}</p>
+            <button 
+              onClick={() => fetchFeed()} 
+              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold text-xs md:text-sm px-6 py-3 rounded-2xl shadow-lg shadow-green-100 transition-all"
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Retry Connection
+            </button>
+          </div>
+        ) : trips.length === 0 ? (
+          // Elegant Empty State (Rule 8)
+          <div className="bg-white rounded-[32px] border border-gray-50 p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
+            <div className="text-4xl">🗺️</div>
+            <h3 className="font-bold text-gray-800 text-lg">No trips generated yet</h3>
+            <p className="text-gray-400 text-xs md:text-sm leading-relaxed">
+              Be the pioneer traveler! Use the AI Planner to generate your first custom expedition, and it will automatically list on this discovery feed.
+            </p>
+            <button 
+              onClick={() => router.push("/post-trip")} 
+              className="bg-green-500 hover:bg-green-600 text-white font-bold text-xs md:text-sm px-6 py-3 rounded-2xl shadow-lg shadow-green-100 transition-all"
+            >
+              Plan with AI 🚀
+            </button>
+          </div>
+        ) : (
+          // Premium social feed grid
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {trips.map((trip) => (
+              <FeedCard 
+                key={trip.tripId} // Strict unique react keys (Rule 7)
+                trip={trip} 
+                onViewDetails={handleViewDetails} 
+              />
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
 }
+
