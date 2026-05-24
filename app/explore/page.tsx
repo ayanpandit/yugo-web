@@ -26,7 +26,7 @@ export default function ExplorePage() {
       <div className="space-y-6 md:space-y-8 pb-10">
         {/* Header Section */}
         <div className="flex flex-col gap-4 md:gap-6">
-          <div className="pl-24 md:pl-0">
+          <div className="pl-16">
             <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Explore Trips 🔭</h1>
             <p className="text-gray-400 text-xs md:text-sm">Browse and join upcoming trips posted by fellow travelers.</p>
           </div>
