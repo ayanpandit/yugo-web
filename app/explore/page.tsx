@@ -17,8 +17,8 @@ export default function ExplorePage() {
   }, [fetchFeed]);
 
   const handleViewDetails = (tripId: string) => {
-    // Navigate to the AI planner details view (decoupled detail view - Rule 6, 16)
-    router.push(`/ai-planner?id=${tripId}`);
+    // Navigate to the dynamic trip details page (Rule 6, 16)
+    router.push(`/trip/${tripId}`);
   };
 
   return (

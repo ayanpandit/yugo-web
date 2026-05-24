@@ -2,10 +2,10 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_URL}${endpoint}`;
-  
+
   // Read token from localStorage as a fallback for cross-site cookie blocks
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  
+
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -14,7 +14,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
       ...options.headers,
     },
     // This is crucial: ensures HttpOnly cookies are automatically sent with requests
-    credentials: "include", 
+    credentials: "include",
   });
 
   // Self-clearing mechanism: delete token on logout or if the server returns 401 (Unauthorized)

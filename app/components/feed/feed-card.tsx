@@ -36,7 +36,10 @@ export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
   );
 
   return (
-    <div className="group relative bg-white rounded-[32px] p-4 shadow-sm border border-gray-50 hover:shadow-xl transition-all cursor-pointer overflow-hidden min-h-[420px] flex flex-col justify-between">
+    <div 
+      onClick={() => onViewDetails?.(trip.tripId)}
+      className="group relative bg-white rounded-[32px] p-4 shadow-sm border border-gray-50 hover:shadow-xl transition-all cursor-pointer overflow-hidden min-h-[420px] flex flex-col justify-between"
+    >
       <div>
         {/* Cover Image */}
         <div className="relative h-48 md:h-52 rounded-2xl overflow-hidden mb-4">
@@ -46,7 +49,10 @@ export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy" // Optimized image rendering (Rule 13)
           />
-          <button className="absolute top-4 right-4 w-9 h-9 md:w-10 md:h-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-white hover:text-red-500 transition-all">
+          <button 
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-4 right-4 w-9 h-9 md:w-10 md:h-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-white hover:text-red-500 transition-all"
+          >
             <Heart size={18} />
           </button>
           <div className="absolute bottom-4 left-4 flex gap-1.5">
