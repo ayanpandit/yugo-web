@@ -27,8 +27,8 @@ This document explains the project structure, tech stack, and where key code liv
   - verify-email/
     - page.tsx: Interactive email verification hub.
   - profile/
-    - page.tsx: Instagram-style profile dashboard page.
-    - profile-content.tsx: Interactive profile layout & editor.
+    - page.tsx: Private dashboard profile entry point.
+    - [username]/page.tsx: Public dynamic route for social profile discovery.
   - dashboard/
     - page.tsx: Main dashboard view with discover world and events.
   - discover/
@@ -144,10 +144,11 @@ Following the project's modular pattern, the dashboard uses a layout-first appro
   - Enhanced with intelligent "Back to Home" navigation routing.
 - **Verification Page (`/verify-email`)**:
   - Interactive page that automatically captures verification tokens from url parameters, validates status with `/auth/verify-email` endpoint, and provides visual confirmation (success tick or failed tokens).
-- **Instagram-Style Profile (`/profile`)**:
-  - A modern dashboard page structured strictly like Instagram's profile layout.
-  - Contains **Traveler Stats** (Trips, Cities, Travelers), **Bio paragraphs**, and dynamic pill-badges for **Travel Style**, **Interests**, and **Languages**.
-  - Includes a togglable **Inline Editor Form** to update user parameters (checking username uniqueness in real-time) while safely disabling/locking core credential edits (Email/Password) for security compliance.
+- **Social Profile System (`/profile` & `/profile/[username]`)**:
+  - **Dual-Route Architecture**: Uses `/profile` as the private entry point for the authenticated user and `/profile/[username]` as a public dynamic route for social graph discovery.
+  - **Modular UI**: Powered by `app/components/profile/profile-template.tsx` which orchestrates specialized, single-responsibility components (`profile-header`, `profile-actions`, `profile-stats`, `profile-trips-grid`, and `profile-edit-form`).
+  - **Ownership Authorization**: UI conditionally renders self-management controls (Edit Profile, Change Photo) versus public social interactions (Follow/Unfollow) strictly based on `isOwner` logic, with backend verification layers maintaining security.
+  - **Social Navigation**: The entire app natively supports social graph routing. Clicking on creators inside Feed cards or Liker lists automatically redirects to their respective public `[username]` profile.
 - **Zustand Feed Store & Discovery Flow (`/explore`)**:
   - **Centralized Feed State**: Managed inside `app/store/feed.store.ts` using Zustand to coordinate discovery feed items (`trips`), loading, and error states globally.
   - **Decoupled API Fetching**: Handled inside `app/services/feed.service.ts` using the secure `apiFetch` utility, completely separating HTTP fetching logic from UI layers.

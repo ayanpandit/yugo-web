@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { MapPin, Calendar, ChevronRight, Star, Heart, X, Loader2 } from "lucide-react";
 import { FeedTrip, TripLiker } from "../../types/feed";
 import { cn, timeAgo } from "@/app/lib/utils";
@@ -11,11 +12,11 @@ interface FeedCardProps {
   onViewDetails?: (tripId: string) => void;
   onToggleLike?: (tripId: string) => void;
 }
-
 export default function FeedCard({ trip, onViewDetails, onToggleLike }: FeedCardProps) {
   const [showLikesOverlay, setShowLikesOverlay] = useState(false);
   const [likers, setLikers] = useState<TripLiker[]>([]);
   const [isLoadingLikers, setIsLoadingLikers] = useState(false);
+  const router = useRouter();
 
   const handleShowLikes = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -106,7 +107,13 @@ export default function FeedCard({ trip, onViewDetails, onToggleLike }: FeedCard
         {/* Card Body */}
         <div className="px-1 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/profile/${creatorUsername}`);
+              }}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+            >
               <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center">
                 {creatorAvatar}
               </div>
@@ -183,7 +190,13 @@ export default function FeedCard({ trip, onViewDetails, onToggleLike }: FeedCard
           ) : (
             likers.map((liker) => (
               <div key={liker.user.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/profile/${liker.user.username}`);
+                  }}
+                  className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                >
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-50 shrink-0 flex items-center justify-center">
                     {liker.user.image ? (
                       <img src={liker.user.image} alt={liker.user.username} className="w-full h-full object-cover" />

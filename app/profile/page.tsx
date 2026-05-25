@@ -1,10 +1,27 @@
-import DashboardLayout from "@/app/components/dashboard/dashboard-layout";
-import ProfileContent from "./profile-content";
+"use client";
+
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/components/providers/auth-provider";
+import { ProfileTemplate } from "@/app/components/profile/profile-template";
 
 export default function ProfilePage() {
-  return (
-    <DashboardLayout>
-      <ProfileContent />
-    </DashboardLayout>
-  );
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex-1 overflow-y-auto bg-[#fcfdfe] p-10 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
+
+  return <ProfileTemplate username={user.username} />;
 }
