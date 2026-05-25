@@ -497,11 +497,11 @@ export default function ProfileContent() {
               </div>
               <div className="text-sm md:text-base">
                 <span className="font-bold text-gray-900">8 </span>
-                <span className="text-gray-500 font-light">cities visited</span>
+                <span className="text-gray-500 font-light">followers</span>
               </div>
               <div className="text-sm md:text-base">
                 <span className="font-bold text-gray-900">47 </span>
-                <span className="text-gray-500 font-light">travelers met</span>
+                <span className="text-gray-500 font-light">following</span>
               </div>
             </div>
 
@@ -835,8 +835,8 @@ export default function ProfileContent() {
             <button
               onClick={() => setActiveTab("trips")}
               className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${activeTab === "trips"
-                  ? "border-gray-800 text-gray-800"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
+                ? "border-gray-800 text-gray-800"
+                : "border-transparent text-gray-400 hover:text-gray-600"
                 }`}
             >
               <Grid size={16} />
@@ -846,8 +846,8 @@ export default function ProfileContent() {
             <button
               onClick={() => setActiveTab("saved")}
               className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${activeTab === "saved"
-                  ? "border-gray-800 text-gray-800"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
+                ? "border-gray-800 text-gray-800"
+                : "border-transparent text-gray-400 hover:text-gray-600"
                 }`}
             >
               <Bookmark size={16} />
@@ -857,8 +857,8 @@ export default function ProfileContent() {
             <button
               onClick={() => setActiveTab("tagged")}
               className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${activeTab === "tagged"
-                  ? "border-gray-800 text-gray-800"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
+                ? "border-gray-800 text-gray-800"
+                : "border-transparent text-gray-400 hover:text-gray-600"
                 }`}
             >
               <User size={16} className="stroke-[2.5]" />
