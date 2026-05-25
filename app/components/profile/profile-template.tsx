@@ -5,6 +5,7 @@ import { useAuth } from "@/app/components/providers/auth-provider";
 import { ProfileHeader } from "./profile-header";
 import { ProfileEditForm } from "./profile-edit-form";
 import { ProfileTripsGrid } from "./profile-trips-grid";
+import { ProfileConnectionsDrawer } from "./profile-connections-drawer";
 
 interface ProfileTemplateProps {
   username: string;
@@ -19,6 +20,7 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
   const [error, setError] = useState("");
   
   const [isEditing, setIsEditing] = useState(false);
+  const [connectionsType, setConnectionsType] = useState<"followers" | "following" | null>(null);
 
   const isOwner = loggedInUser?.username === username;
 
@@ -44,6 +46,7 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
 
     if (username) {
       fetchProfile();
+      setConnectionsType(null); // Reset drawer on user change
     }
   }, [username, isOwner]);
 
@@ -133,6 +136,15 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
           isFollowing={profileData.isFollowing}
           onToggleFollow={handleToggleFollow}
           onRefreshSession={handleRefreshProfile}
+          onFollowersClick={() => setConnectionsType(connectionsType === "followers" ? null : "followers")}
+          onFollowingClick={() => setConnectionsType(connectionsType === "following" ? null : "following")}
+        />
+
+        <ProfileConnectionsDrawer
+          userId={displayUser.id}
+          type={connectionsType}
+          onClose={() => setConnectionsType(null)}
+          onUserClick={() => setConnectionsType(null)}
         />
 
         {isOwner && isEditing ? (

@@ -13,6 +13,8 @@ interface ProfileHeaderProps {
   isFollowing: boolean;
   onToggleFollow: () => void;
   onRefreshSession: () => void;
+  onFollowersClick?: () => void;
+  onFollowingClick?: () => void;
 }
 
 export function ProfileHeader({
@@ -24,6 +26,8 @@ export function ProfileHeader({
   isFollowing,
   onToggleFollow,
   onRefreshSession,
+  onFollowersClick,
+  onFollowingClick,
 }: ProfileHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -154,6 +158,8 @@ export function ProfileHeader({
           followersCount={user?.followersCount || 0}
           followingCount={user?.followingCount || 0}
           isMobile={true}
+          onFollowersClick={onFollowersClick}
+          onFollowingClick={onFollowingClick}
         />
       </div>
 
@@ -178,6 +184,8 @@ export function ProfileHeader({
           tripsCount={user?.tripsCount || 0}
           followersCount={user?.followersCount || 0}
           followingCount={user?.followingCount || 0}
+          onFollowersClick={onFollowersClick}
+          onFollowingClick={onFollowingClick}
         />
 
         {!isEditing && (

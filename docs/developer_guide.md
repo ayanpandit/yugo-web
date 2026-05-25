@@ -147,6 +147,7 @@ Following the project's modular pattern, the dashboard uses a layout-first appro
 - **Social Profile System (`/profile` & `/profile/[username]`)**:
   - **Dual-Route Architecture**: Uses `/profile` as the private entry point for the authenticated user and `/profile/[username]` as a public dynamic route for social graph discovery.
   - **Modular UI**: Powered by `app/components/profile/profile-template.tsx` which orchestrates specialized, single-responsibility components (`profile-header`, `profile-actions`, `profile-stats`, `profile-trips-grid`, and `profile-edit-form`).
+  - **Instagram-Style Sliding Connections**: Includes `<ProfileConnectionsDrawer>` component which dynamically fetches and lists followers or following lists via `GET /api/v1/users/:userId/followers` or `/following` respectively. When clicking stats in `<ProfileStats>`, the connections panel slides open using custom CSS/Tailwind transitions directly beneath the dividing header border line.
   - **Ownership Authorization**: UI conditionally renders self-management controls (Edit Profile, Change Photo) versus public social interactions (Follow/Unfollow) strictly based on `isOwner` logic, with backend verification layers maintaining security.
   - **Social Navigation**: The entire app natively supports social graph routing. Clicking on creators inside Feed cards or Liker lists automatically redirects to their respective public `[username]` profile.
 - **Zustand Feed Store & Discovery Flow (`/explore`)**:
