@@ -10,7 +10,7 @@ import FeedSkeleton from "../components/feed/feed-skeleton";
 
 export default function ExplorePage() {
   const router = useRouter();
-  const { trips, loading, error, fetchFeed } = useFeedStore();
+  const { trips, loading, error, fetchFeed, toggleLike } = useFeedStore();
 
   useEffect(() => {
     fetchFeed();
@@ -108,6 +108,7 @@ export default function ExplorePage() {
                 key={trip.tripId} // Strict unique react keys (Rule 7)
                 trip={trip}
                 onViewDetails={handleViewDetails}
+                onToggleLike={toggleLike}
               />
             ))}
           </div>

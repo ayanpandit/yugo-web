@@ -8,9 +8,10 @@ import { cn } from "@/app/lib/utils";
 interface FeedCardProps {
   trip: FeedTrip;
   onViewDetails?: (tripId: string) => void;
+  onToggleLike?: (tripId: string) => void;
 }
 
-export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
+export default function FeedCard({ trip, onViewDetails, onToggleLike }: FeedCardProps) {
   // Safe UI fallbacks for null/missing fields (Rule 4)
   const coverImage = trip.coverImage || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=600";
   const destination = trip.destination || "Scenic Destination";
@@ -49,12 +50,28 @@ export default function FeedCard({ trip, onViewDetails }: FeedCardProps) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy" // Optimized image rendering (Rule 13)
           />
-          <button 
-            onClick={(e) => e.stopPropagation()}
-            className="absolute top-4 right-4 w-9 h-9 md:w-10 md:h-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-white hover:text-red-500 transition-all"
-          >
-            <Heart size={18} />
-          </button>
+          <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleLike?.(trip.tripId);
+              }}
+              className="w-9 h-9 md:w-10 md:h-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-white hover:text-red-500 transition-all shadow-sm"
+            >
+              <Heart 
+                size={18} 
+                className={cn(
+                  "transition-all duration-300", 
+                  trip.isLiked ? "fill-red-500 text-red-500 scale-110" : "fill-transparent"
+                )} 
+              />
+            </button>
+            {trip.likesCount > 0 && (
+              <span className="text-white text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20">
+                {trip.likesCount}
+              </span>
+            )}
+          </div>
           <div className="absolute bottom-4 left-4 flex gap-1.5">
             <span className="px-2.5 py-1 bg-black/40 backdrop-blur-md rounded-lg text-[8px] md:text-[9px] text-white font-bold uppercase tracking-wider border border-white/20">
               {tripType}

@@ -13,6 +13,8 @@ export interface FeedTrip {
   perPersonCost: number | null;
   createdAt: string;
   creator: FeedCreator;
+  likesCount: number;
+  isLiked: boolean;
 }
 
 export interface FeedResponse {
