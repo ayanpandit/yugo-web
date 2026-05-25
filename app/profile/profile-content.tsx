@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { 
-  User, 
-  Mail, 
-  MapPin, 
-  Shield, 
-  Lock, 
-  Grid, 
-  Bookmark, 
-  Heart, 
-  Compass, 
-  Globe, 
-  Calendar, 
-  Sparkles, 
-  LogOut, 
-  Check, 
-  AlertCircle 
+import {
+  User,
+  Mail,
+  MapPin,
+  Shield,
+  Lock,
+  Grid,
+  Bookmark,
+  Heart,
+  Compass,
+  Globe,
+  Calendar,
+  Sparkles,
+  LogOut,
+  Check,
+  AlertCircle
 } from "lucide-react";
 import { useAuth } from "@/app/components/providers/auth-provider";
 import { apiFetch, API_URL } from "@/app/lib/api";
@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 export default function ProfileContent() {
   const { user, refreshSession } = useAuth();
   const router = useRouter();
-  
+
   // Avatar upload ref and state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -50,7 +50,7 @@ export default function ProfileContent() {
 
   const startLongPress = (e: React.MouseEvent | React.TouchEvent) => {
     isLongPressActiveRef.current = false;
-    
+
     longPressTimeoutRef.current = setTimeout(() => {
       setIsPreviewOpen(true);
       isLongPressActiveRef.current = true;
@@ -91,7 +91,7 @@ export default function ProfileContent() {
       setCropOffset({ x: 0, y: 0 });
     };
     reader.readAsDataURL(file);
-    
+
     // Clear input so selecting same image again triggers onChange
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -141,36 +141,36 @@ export default function ProfileContent() {
   // Canvas cropping logic & JPEG generation
   const handleApplyCrop = async () => {
     if (!croppingImageSrc || !cropperImageRef.current || !cropperContainerRef.current) return;
-    
+
     setUploadingImage(true);
     setCroppingImageSrc(null); // Close modal right away to show main loader
-    
+
     try {
       const img = cropperImageRef.current;
       const container = cropperContainerRef.current;
-      
+
       const canvas = document.createElement("canvas");
       canvas.width = 400;
       canvas.height = 400;
       const ctx = canvas.getContext("2d");
-      
+
       if (!ctx) throw new Error("Could not get 2D canvas context");
-      
+
       const containerRect = container.getBoundingClientRect();
       const imgRect = img.getBoundingClientRect();
-      
+
       const scaleX = img.naturalWidth / imgRect.width;
       const scaleY = img.naturalHeight / imgRect.height;
-      
+
       const cropSize = Math.min(containerRect.width, containerRect.height);
       const cropX = (containerRect.width - cropSize) / 2;
       const cropY = (containerRect.height - cropSize) / 2;
-      
+
       const sx = (cropX - (imgRect.left - containerRect.left)) * scaleX;
       const sy = (cropY - (imgRect.top - containerRect.top)) * scaleY;
       const sWidth = cropSize * scaleX;
       const sHeight = cropSize * scaleY;
-      
+
       ctx.drawImage(
         img,
         sx,
@@ -182,18 +182,18 @@ export default function ProfileContent() {
         400,
         400
       );
-      
+
       canvas.toBlob(async (blob) => {
         if (!blob) {
           setErrorMsg("Failed to generate cropped image.");
           setUploadingImage(false);
           return;
         }
-        
+
         const croppedFile = new File([blob], "cropped_profile.jpg", { type: "image/jpeg" });
         await uploadCroppedImage(croppedFile);
       }, "image/jpeg", 0.9);
-      
+
     } catch (err) {
       console.error("Cropping calculation failed:", err);
       setErrorMsg("Failed to process image cropping.");
@@ -211,7 +211,7 @@ export default function ProfileContent() {
 
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      
+
       const res = await fetch(`${API_URL}/auth/profile/image`, {
         method: "POST",
         headers: {
@@ -235,7 +235,7 @@ export default function ProfileContent() {
       setUploadingImage(false);
     }
   };
-  
+
   // Form states
   const [name, setName] = useState(user?.name || "");
   const [username, setUsername] = useState(user?.username || "");
@@ -249,7 +249,7 @@ export default function ProfileContent() {
   const [travelStyle, setTravelStyle] = useState(user?.travelStyle || "");
   const [interests, setInterests] = useState(user?.interests?.join(", ") || "");
   const [languages, setLanguages] = useState(user?.languages?.join(", ") || "");
-  
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -274,7 +274,7 @@ export default function ProfileContent() {
       .split(",")
       .map((item: string) => item.trim())
       .filter((item: string) => item.length > 0);
-      
+
     const parsedLanguages = languages
       .split(",")
       .map((item: string) => item.trim())
@@ -373,7 +373,7 @@ export default function ProfileContent() {
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar bg-[#fcfdfe]">
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-10">
-        
+
         {errorMsg && (
           <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-xs md:text-sm font-semibold flex items-center gap-2 shadow-sm animate-[fadeIn_0.2s_ease-out]">
             <AlertCircle size={16} className="flex-shrink-0" />
@@ -392,13 +392,13 @@ export default function ProfileContent() {
 
         {/* Instagram Profile Header */}
         <div className="flex flex-col md:flex-row items-start gap-6 md:gap-16 pb-8 md:pb-10 border-b border-gray-150">
-          
+
           {/* Avatar and Stats Row container (stacked horizontally on mobile) */}
           <div className="flex items-center gap-6 md:gap-16 w-full md:w-auto">
             {/* Avatar */}
             <div className="flex-shrink-0">
               <div className="relative group">
-                <div 
+                <div
                   onMouseDown={startLongPress}
                   onMouseUp={endLongPress}
                   onMouseLeave={endLongPress}
@@ -415,10 +415,10 @@ export default function ProfileContent() {
                         <span>Uploading...</span>
                       </div>
                     ) : user.image ? (
-                      <img 
-                        src={user.image} 
-                        alt={user.name || user.username} 
-                        className="w-full h-full rounded-full object-cover" 
+                      <img
+                        src={user.image}
+                        alt={user.name || user.username}
+                        className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl sm:text-4xl md:text-5xl shadow-inner select-none font-bold text-green-700">
@@ -427,14 +427,14 @@ export default function ProfileContent() {
                     )}
                   </div>
                 </div>
-                <div 
+                <div
                   className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] sm:text-xs font-semibold cursor-pointer pointer-events-none"
                 >
                   {uploadingImage ? "Processing..." : "Change Photo"}
                 </div>
-                
+
                 {/* Hidden file input */}
-                <input 
+                <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleImageUpload}
@@ -453,33 +453,33 @@ export default function ProfileContent() {
               </div>
               <div className="flex flex-col items-center">
                 <span className="font-extrabold text-gray-900 text-sm sm:text-base">8</span>
-                <span className="text-gray-400 text-[10px] sm:text-xs font-light">cities</span>
+                <span className="text-gray-400 text-[10px] sm:text-xs font-light">followers</span>
               </div>
               <div className="flex flex-col items-center">
                 <span className="font-extrabold text-gray-900 text-sm sm:text-base">47</span>
-                <span className="text-gray-400 text-[10px] sm:text-xs font-light">travelers</span>
+                <span className="text-gray-400 text-[10px] sm:text-xs font-light">following</span>
               </div>
             </div>
           </div>
 
           {/* Right Profile Meta Section */}
           <div className="flex-1 space-y-4 md:space-y-6 w-full text-left">
-            
+
             {/* Top row: Username + Desktop buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <h2 className="text-xl md:text-2xl font-light text-gray-800 tracking-wide font-sans text-left">
                 @{user.username}
               </h2>
-              
+
               {/* Desktop-only action buttons (hidden below sm) */}
               <div className="hidden sm:flex items-center gap-3">
-                <button 
+                <button
                   onClick={() => setIsEditing(!isEditing)}
                   className="px-6 py-1.5 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer"
                 >
                   {isEditing ? "Cancel" : "Edit Profile"}
                 </button>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="p-1.5 md:p-2 bg-white border border-gray-250 text-red-500 hover:bg-red-50 active:scale-[0.98] rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center"
                   title="Sign Out"
@@ -544,8 +544,8 @@ export default function ProfileContent() {
                     <div className="flex flex-wrap items-center gap-1.5 pt-1 justify-start">
                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Interests:</span>
                       {user.interests.map((interest: string, i: number) => (
-                        <span 
-                          key={i} 
+                        <span
+                          key={i}
                           className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] md:text-xs rounded-full font-medium"
                         >
                           {interest}
@@ -559,8 +559,8 @@ export default function ProfileContent() {
                     <div className="flex flex-wrap items-center gap-1.5 justify-start">
                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Languages:</span>
                       {user.languages.map((lang: string, i: number) => (
-                        <span 
-                          key={i} 
+                        <span
+                          key={i}
                           className="px-2 py-0.5 bg-emerald-50 text-[#006644] text-[10px] md:text-xs rounded-full font-bold border border-emerald-100"
                         >
                           {lang}
@@ -574,13 +574,13 @@ export default function ProfileContent() {
 
             {/* Mobile-only action buttons (visible below sm) */}
             <div className="flex sm:hidden items-center gap-2 w-full pt-3">
-              <button 
+              <button
                 onClick={() => setIsEditing(!isEditing)}
                 className="flex-1 py-2 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer"
               >
                 {isEditing ? "Cancel" : "Edit Profile"}
               </button>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="px-3 py-2 bg-white border border-gray-250 text-red-500 hover:bg-red-50 active:scale-[0.98] rounded-lg shadow-sm transition-all flex items-center justify-center cursor-pointer"
                 title="Sign Out"
@@ -618,7 +618,7 @@ export default function ProfileContent() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 {/* Name */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Full Name</label>
@@ -754,7 +754,7 @@ export default function ProfileContent() {
 
                 {/* RESTRICTED SECURITY SECTION */}
                 <div className="md:col-span-2 pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6 bg-red-50/20 p-4 rounded-xl border border-red-50/50">
-                  
+
                   {/* Email (Disabled) */}
                   <div className="space-y-2 relative group">
                     <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-400">
@@ -834,11 +834,10 @@ export default function ProfileContent() {
           <div className="flex items-center justify-center gap-12">
             <button
               onClick={() => setActiveTab("trips")}
-              className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                activeTab === "trips"
+              className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${activeTab === "trips"
                   ? "border-gray-800 text-gray-800"
                   : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
             >
               <Grid size={16} />
               <span>My Trips</span>
@@ -846,11 +845,10 @@ export default function ProfileContent() {
 
             <button
               onClick={() => setActiveTab("saved")}
-              className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                activeTab === "saved"
+              className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${activeTab === "saved"
                   ? "border-gray-800 text-gray-800"
                   : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
             >
               <Bookmark size={16} />
               <span>Saved</span>
@@ -858,11 +856,10 @@ export default function ProfileContent() {
 
             <button
               onClick={() => setActiveTab("tagged")}
-              className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                activeTab === "tagged"
+              className={`flex items-center gap-2 py-4 border-t-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${activeTab === "tagged"
                   ? "border-gray-800 text-gray-800"
                   : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
             >
               <User size={16} className="stroke-[2.5]" />
               <span>Tagged</span>
@@ -874,14 +871,14 @@ export default function ProfileContent() {
             {activeTab === "trips" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-[fadeIn_0.4s_ease-out]">
                 {mockTrips.map((trip) => (
-                  <div 
-                    key={trip.id} 
+                  <div
+                    key={trip.id}
                     className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer relative"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      <img 
-                        src={trip.image} 
-                        alt={trip.title} 
+                      <img
+                        src={trip.image}
+                        alt={trip.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                       {/* Hover stats overlay */}
@@ -894,7 +891,7 @@ export default function ProfileContent() {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="p-4 space-y-1 bg-white">
                       <h4 className="font-bold text-gray-900 text-sm md:text-base truncate">
                         {trip.title}
@@ -956,9 +953,9 @@ export default function ProfileContent() {
               {/* Large Expanded High-Res Picture */}
               <div className="w-full aspect-square mt-4 rounded-2xl overflow-hidden bg-zinc-950 shadow-inner flex items-center justify-center border border-gray-100">
                 {user.image ? (
-                  <img 
-                    src={user.image} 
-                    alt={user.name || user.username} 
+                  <img
+                    src={user.image}
+                    alt={user.name || user.username}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -980,11 +977,11 @@ export default function ProfileContent() {
         {croppingImageSrc && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
             <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-100 flex flex-col animate-[scaleIn_0.2s_ease-out]">
-              
+
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setCroppingImageSrc(null)}
                   className="text-gray-500 hover:text-gray-700 text-sm font-semibold cursor-pointer border-none bg-transparent"
                 >
@@ -993,8 +990,8 @@ export default function ProfileContent() {
                 <h3 className="font-extrabold text-gray-900 text-sm tracking-wide">
                   Crop Photo
                 </h3>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={handleApplyCrop}
                   className="text-blue-500 hover:text-blue-600 text-sm font-bold cursor-pointer border-none bg-transparent"
                 >
@@ -1003,7 +1000,7 @@ export default function ProfileContent() {
               </div>
 
               {/* Cropper Container */}
-              <div 
+              <div
                 ref={cropperContainerRef}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
@@ -1014,7 +1011,7 @@ export default function ProfileContent() {
                 onTouchEnd={handleTouchEnd}
                 className="relative aspect-square w-full bg-zinc-950 overflow-hidden cursor-move select-none flex items-center justify-center"
               >
-                <img 
+                <img
                   ref={cropperImageRef}
                   src={croppingImageSrc}
                   alt="Crop Preview"
@@ -1034,7 +1031,7 @@ export default function ProfileContent() {
                     <div className="absolute inset-0 rounded-full border border-white/50 shadow-[0_0_0_9999px_rgba(24,24,27,0.65)]" />
                   </div>
                 </div>
-                
+
                 {/* Visual grid guide lines (fades on hover/interaction) */}
                 {isDragging && (
                   <div className="absolute inset-0 pointer-events-none border-[40px] border-transparent flex flex-col justify-between p-0.5">
@@ -1050,7 +1047,7 @@ export default function ProfileContent() {
               <div className="p-6 space-y-4 bg-gray-50 border-t border-gray-100">
                 <div className="flex items-center gap-3">
                   <span className="text-gray-400 text-xs select-none">🔍</span>
-                  <input 
+                  <input
                     type="range"
                     min="1"
                     max="3"
@@ -1063,7 +1060,7 @@ export default function ProfileContent() {
                     {Math.round(cropZoom * 100)}%
                   </span>
                 </div>
-                
+
                 <p className="text-[10px] text-gray-400 font-medium text-center select-none">
                   Drag the photo to pan and adjust. Use the slider to zoom.
                 </p>
