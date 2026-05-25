@@ -1,4 +1,5 @@
 import { apiFetch } from "../lib/api";
+import { TripLiker } from "../types/feed";
 
 export interface ToggleLikeResponse {
   status: string;
@@ -16,6 +17,16 @@ export const likeService = {
 
     if (!response.ok) {
       throw new Error(`Failed to toggle like`);
+    }
+
+    return response.json();
+  },
+
+  getTripLikes: async (generationId: string): Promise<{ status: string; data: TripLiker[] }> => {
+    const response = await apiFetch(`/api/v1/trips/${generationId}/likes`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch likes`);
     }
 
     return response.json();

@@ -3,6 +3,17 @@ export interface FeedCreator {
   image: string | null;
 }
 
+export interface TripLiker {
+  user: {
+    id: string;
+    username: string;
+    name: string | null;
+    image: string | null;
+    bio: string | null;
+  };
+  likedAt: string;
+}
+
 export interface FeedTrip {
   tripId: string;
   coverImage: string | null;
