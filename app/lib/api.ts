@@ -6,13 +6,24 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   // Read token from localStorage as a fallback for cross-site cookie blocks
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
+  const headers: Record<string, string> = {
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+  };
+
+  // Only append JSON content type if it is not FormData or custom overridden
+  if (options.body && !(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  // Allow custom options headers to override
+  const mergedHeaders = {
+    ...headers,
+    ...options.headers,
+  };
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
+    headers: mergedHeaders,
     // This is crucial: ensures HttpOnly cookies are automatically sent with requests
     credentials: "include",
   });
