@@ -9,6 +9,7 @@ interface ProfileActionsProps {
   onEditToggle: () => void;
   onLogout: () => void;
   onToggleFollow: () => void;
+  onMessageClick?: () => void;
   isMobile?: boolean;
 }
 
@@ -20,6 +21,7 @@ export function ProfileActions({
   onEditToggle,
   onLogout,
   onToggleFollow,
+  onMessageClick,
   isMobile = false
 }: ProfileActionsProps) {
   if (isLoadingAuth) {
@@ -58,16 +60,24 @@ export function ProfileActions({
             </button>
           </>
         ) : (
-          <button
-            onClick={onToggleFollow}
-            className={`flex-1 py-2 font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer ${
-              isFollowing
-                ? "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50"
-                : "bg-green-500 text-white hover:bg-green-600 border border-green-500"
-            }`}
-          >
-            {isFollowing ? "Following" : "Follow"}
-          </button>
+          <>
+            <button
+              onClick={onToggleFollow}
+              className={`flex-1 py-2 font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer ${
+                isFollowing
+                  ? "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50"
+                  : "bg-green-500 text-white hover:bg-green-600 border border-green-500"
+              }`}
+            >
+              {isFollowing ? "Following" : "Follow"}
+            </button>
+            <button
+              onClick={onMessageClick}
+              className="flex-1 py-2 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer"
+            >
+              Message
+            </button>
+          </>
         )}
       </div>
     );
@@ -92,16 +102,24 @@ export function ProfileActions({
           </button>
         </>
       ) : (
-        <button
-          onClick={onToggleFollow}
-          className={`px-8 py-1.5 font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer ${
-            isFollowing
-              ? "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50"
-              : "bg-green-500 text-white hover:bg-green-600 border border-green-500"
-          }`}
-        >
-          {isFollowing ? "Following" : "Follow"}
-        </button>
+        <>
+          <button
+            onClick={onToggleFollow}
+            className={`px-8 py-1.5 font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer ${
+              isFollowing
+                ? "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50"
+                : "bg-green-500 text-white hover:bg-green-600 border border-green-500"
+            }`}
+          >
+            {isFollowing ? "Following" : "Follow"}
+          </button>
+          <button
+            onClick={onMessageClick}
+            className="px-8 py-1.5 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer"
+          >
+            Message
+          </button>
+        </>
       )}
     </div>
   );

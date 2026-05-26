@@ -16,6 +16,7 @@ interface ProfileHeaderProps {
   onRefreshSession: () => void;
   onFollowersClick?: () => void;
   onFollowingClick?: () => void;
+  onMessageClick?: () => void;
 }
 
 export function ProfileHeader({
@@ -30,6 +31,7 @@ export function ProfileHeader({
   onRefreshSession,
   onFollowersClick,
   onFollowingClick,
+  onMessageClick,
 }: ProfileHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -180,6 +182,7 @@ export function ProfileHeader({
             onEditToggle={onEditToggle}
             onLogout={onLogout}
             onToggleFollow={onToggleFollow}
+            onMessageClick={onMessageClick}
           />
         </div>
 
@@ -254,6 +257,7 @@ export function ProfileHeader({
           onEditToggle={onEditToggle}
           onLogout={onLogout}
           onToggleFollow={onToggleFollow}
+          onMessageClick={onMessageClick}
           isMobile={true}
         />
       </div>

@@ -82,6 +82,27 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
     }
   };
 
+  const handleMessage = async () => {
+    if (!loggedInUser) {
+      router.push("/login");
+      return;
+    }
+    if (!profileData?.user?.id) return;
+    
+    try {
+      const res = await apiFetch(`/api/v1/conversations/direct/${profileData.user.id}`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const result = await res.json();
+        const conversationId = result.data.conversationId;
+        router.push(`/messages/${conversationId}`);
+      }
+    } catch (err) {
+      console.error("Failed to start or retrieve direct conversation:", err);
+    }
+  };
+
   const handleRefreshProfile = async () => {
     // Re-fetch logic or just refresh session for owner
     if (isOwner) {
@@ -139,6 +160,7 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
           onRefreshSession={handleRefreshProfile}
           onFollowersClick={() => setConnectionsType(connectionsType === "followers" ? null : "followers")}
           onFollowingClick={() => setConnectionsType(connectionsType === "following" ? null : "following")}
+          onMessageClick={handleMessage}
         />
 
         <ProfileConnectionsDrawer
