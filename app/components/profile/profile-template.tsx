@@ -12,7 +12,7 @@ interface ProfileTemplateProps {
 }
 
 export function ProfileTemplate({ username }: ProfileTemplateProps) {
-  const { user: loggedInUser, refreshSession } = useAuth();
+  const { user: loggedInUser, refreshSession, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
   
   const [profileData, setProfileData] = useState<any>(null);
@@ -131,6 +131,7 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
           user={displayUser}
           isOwner={isOwner}
           isEditing={isEditing}
+          isLoadingAuth={isAuthLoading}
           onEditToggle={() => setIsEditing(!isEditing)}
           onLogout={handleLogout}
           isFollowing={profileData.isFollowing}

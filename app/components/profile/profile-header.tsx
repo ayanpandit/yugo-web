@@ -8,6 +8,7 @@ interface ProfileHeaderProps {
   user: any;
   isOwner: boolean;
   isEditing: boolean;
+  isLoadingAuth?: boolean;
   onEditToggle: () => void;
   onLogout: () => void;
   isFollowing: boolean;
@@ -21,6 +22,7 @@ export function ProfileHeader({
   user,
   isOwner,
   isEditing,
+  isLoadingAuth,
   onEditToggle,
   onLogout,
   isFollowing,
@@ -173,6 +175,7 @@ export function ProfileHeader({
           <ProfileActions 
             isOwner={isOwner}
             isEditing={isEditing}
+            isLoadingAuth={isLoadingAuth}
             isFollowing={isFollowing}
             onEditToggle={onEditToggle}
             onLogout={onLogout}
@@ -246,6 +249,7 @@ export function ProfileHeader({
         <ProfileActions 
           isOwner={isOwner}
           isEditing={isEditing}
+          isLoadingAuth={isLoadingAuth}
           isFollowing={isFollowing}
           onEditToggle={onEditToggle}
           onLogout={onLogout}

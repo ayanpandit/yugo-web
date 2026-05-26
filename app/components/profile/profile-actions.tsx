@@ -5,6 +5,7 @@ interface ProfileActionsProps {
   isOwner: boolean;
   isFollowing: boolean;
   isEditing: boolean;
+  isLoadingAuth?: boolean;
   onEditToggle: () => void;
   onLogout: () => void;
   onToggleFollow: () => void;
@@ -15,11 +16,28 @@ export function ProfileActions({
   isOwner,
   isFollowing,
   isEditing,
+  isLoadingAuth,
   onEditToggle,
   onLogout,
   onToggleFollow,
   isMobile = false
 }: ProfileActionsProps) {
+  if (isLoadingAuth) {
+    if (isMobile) {
+      return (
+        <div className="flex sm:hidden items-center gap-2 w-full pt-3">
+          <div className="flex-1 py-4 bg-gray-100 rounded-lg animate-pulse" />
+        </div>
+      );
+    }
+    return (
+      <div className="hidden sm:flex items-center gap-3">
+        <div className="w-24 py-3.5 bg-gray-100 rounded-lg animate-pulse" />
+        <div className="w-9 h-9 bg-gray-100 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
   if (isMobile) {
     return (
       <div className="flex sm:hidden items-center gap-2 w-full pt-3">
