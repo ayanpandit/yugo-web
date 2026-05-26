@@ -398,8 +398,16 @@ export default function ConversationPage() {
       // Realtime incoming message receiver
       socket.on("message:receive", (newMessage: Message) => {
         setMessages((prev) => {
-          // Guard against duplicate optimistic appends
-          if (prev.some((m) => m.messageId === newMessage.messageId)) return prev;
+          // Guard against duplicate optimistic and canonical appends (race condition duplicate check)
+          if (newMessage.sender.id === currentUser?.id) {
+            const isDuplicate = prev.some((m) => 
+              m.messageId === newMessage.messageId || 
+              (m.messageId.startsWith("opt_") && m.text === newMessage.text && m.type === newMessage.type)
+            );
+            if (isDuplicate) return prev;
+          } else {
+            if (prev.some((m) => m.messageId === newMessage.messageId)) return prev;
+          }
           return [...prev, newMessage];
         });
 
@@ -474,14 +482,18 @@ export default function ConversationPage() {
           const result = await res.json();
           const canonicalMessage = result.data;
 
-          // Swap optimistic message for canonical message
-          setMessages((prev) =>
-            prev.map((msg) =>
+          // Swap optimistic message for canonical message (ignoring duplicate if already received via socket)
+          setMessages((prev) => {
+            const hasCanonical = prev.some((msg) => msg.messageId === canonicalMessage.messageId);
+            if (hasCanonical) {
+              return prev.filter((msg) => msg.messageId !== tempId);
+            }
+            return prev.map((msg) =>
               msg.messageId === tempId
                 ? { ...canonicalMessage, status: "sent" }
                 : msg
-            )
-          );
+            );
+          });
         } else {
           throw new Error("Failed to persist");
         }
@@ -523,13 +535,17 @@ export default function ConversationPage() {
         const result = await res.json();
         const canonicalMessage = result.data;
 
-        setMessages((prev) =>
-          prev.map((m) =>
+        setMessages((prev) => {
+          const hasCanonical = prev.some((msg) => msg.messageId === canonicalMessage.messageId);
+          if (hasCanonical) {
+            return prev.filter((msg) => msg.messageId !== failedMsg.messageId);
+          }
+          return prev.map((m) =>
             m.messageId === failedMsg.messageId
               ? { ...canonicalMessage, status: "sent" }
               : m
-          )
-        );
+          );
+        });
       } else {
         throw new Error("Failed to persist on retry");
       }
@@ -613,13 +629,17 @@ export default function ConversationPage() {
           const canonicalMessage = msgResult.data;
 
           // Swap local Blob URL for production Cloudinary canonical URL
-          setMessages((prev) =>
-            prev.map((msg) =>
+          setMessages((prev) => {
+            const hasCanonical = prev.some((msg) => msg.messageId === canonicalMessage.messageId);
+            if (hasCanonical) {
+              return prev.filter((msg) => msg.messageId !== tempId);
+            }
+            return prev.map((msg) =>
               msg.messageId === tempId
                 ? { ...canonicalMessage, status: "sent" }
                 : msg
-            )
-          );
+            );
+          });
         } else {
           throw new Error("Canonical persist failed");
         }
@@ -751,14 +771,14 @@ export default function ConversationPage() {
           {participant && (
             <>
               <button 
-                onClick={() => initiateCall(conversationId, participant.id, "voice")}
+                onClick={() => initiateCall(conversationId, participant.id, "voice", participant)}
                 className="p-2.5 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-xl transition-all cursor-pointer"
                 title="Voice Call"
               >
                 <Phone size={20} />
               </button>
               <button 
-                onClick={() => initiateCall(conversationId, participant.id, "video")}
+                onClick={() => initiateCall(conversationId, participant.id, "video", participant)}
                 className="p-2.5 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-xl transition-all cursor-pointer"
                 title="Video Call"
               >

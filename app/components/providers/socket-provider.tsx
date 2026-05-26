@@ -15,7 +15,7 @@ interface SocketContextType {
   setIncomingCall: (call: any) => void;
   activeCall: any;
   setActiveCall: (call: any) => void;
-  initiateCall: (conversationId: string, targetUserId: string, type: "voice" | "video") => void;
+  initiateCall: (conversationId: string, targetUserId: string, type: "voice" | "video", peer?: any) => void;
   acceptCall: () => void;
   rejectCall: () => void;
   endCall: () => void;
@@ -131,7 +131,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // Call Initiation handlers
-  const initiateCall = (conversationId: string, targetUserId: string, type: "voice" | "video") => {
+  const initiateCall = (conversationId: string, targetUserId: string, type: "voice" | "video", peer?: any) => {
     if (!socket || !user) return;
     
     console.log(`[SocketProvider] Initiating call to target=${targetUserId}, conversation=${conversationId}, type=${type}`);
@@ -142,7 +142,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       peerId: targetUserId,
       type,
       role: "caller",
-      status: "ringing"
+      status: "ringing",
+      peer
     });
 
     socket.emit("call:initiate", { conversationId, targetUserId, type });

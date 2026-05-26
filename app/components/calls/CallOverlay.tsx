@@ -27,6 +27,7 @@ export function CallOverlay({
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -62,6 +63,9 @@ export function CallOverlay({
     
     const ctx = new AudioContextClass();
     audioCtxRef.current = ctx;
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
 
     const playPulse = () => {
       if (ctx.state === "closed") return;
@@ -101,6 +105,9 @@ export function CallOverlay({
 
     const ctx = new AudioContextClass();
     audioCtxRef.current = ctx;
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
 
     const playDialtone = () => {
       if (ctx.state === "closed") return;
@@ -139,6 +146,9 @@ export function CallOverlay({
     if (!AudioContextClass) return;
 
     const ctx = new AudioContextClass();
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -163,6 +173,9 @@ export function CallOverlay({
     if (!AudioContextClass) return;
 
     const ctx = new AudioContextClass();
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -303,11 +316,17 @@ export function CallOverlay({
           pc.addTrack(track, stream);
         });
 
-        // Set remote tracks to receiver element
+        // Set remote tracks to correct receiver elements depending on voice/video call category
         pc.ontrack = (event) => {
-          console.log("[WebRTC] Received remote stream track");
-          if (remoteVideoRef.current && event.streams[0]) {
-            remoteVideoRef.current.srcObject = event.streams[0];
+          console.log("[WebRTC] Received remote stream track, isVideo =", isVideo);
+          if (isVideo) {
+            if (remoteVideoRef.current && event.streams[0]) {
+              remoteVideoRef.current.srcObject = event.streams[0];
+            }
+          } else {
+            if (remoteAudioRef.current && event.streams[0]) {
+              remoteAudioRef.current.srcObject = event.streams[0];
+            }
           }
         };
 
@@ -379,7 +398,7 @@ export function CallOverlay({
     setupWebRTC();
 
     return () => {
-      console.log("[WebRTC] Tearing down peer connection...");
+      console.log("[WebRTC] Tearing down peer connection and clearing tracks...");
       if (socket) {
         socket.off("call:signal");
       }
@@ -388,6 +407,12 @@ export function CallOverlay({
       }
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
+      }
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = null;
+      }
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = null;
       }
     };
   }, [isConnected]);
@@ -486,7 +511,7 @@ export function CallOverlay({
               {activeCall.type} call
             </p>
             <h2 className="text-2xl font-bold mt-2">
-              Calling User
+              {activeCall.peer?.name || (activeCall.peer?.username ? `@${activeCall.peer.username}` : "Calling...")}
             </h2>
             <p className="text-sm text-gray-300 font-medium mt-1 font-mono">
               {isConnected ? formatTimer(connectionTime) : "Ringing..."}
@@ -521,16 +546,35 @@ export function CallOverlay({
               </div>
             </div>
           ) : (
-            // Audio Calling profile rendering
+            // Outgoing Audio Calling or Pre-connection Ringing profile rendering
             <div className="relative flex flex-col items-center">
-              <span className={cn("absolute w-24 h-24 rounded-full bg-emerald-500/10", !isConnected && "animate-pulse")} />
-              <div className="w-24 h-24 rounded-full bg-emerald-900/50 flex items-center justify-center text-4xl font-bold shadow-2xl border border-white/10 relative z-10">
-                📞
-              </div>
+              <span className={cn("absolute w-28 h-28 rounded-full bg-emerald-500/10", !isConnected && "animate-pulse")} />
+              <span className="absolute w-32 h-32 rounded-full bg-emerald-500/5 animate-ping" />
+              {activeCall.peer?.image ? (
+                <img 
+                  src={activeCall.peer.image} 
+                  className="w-24 h-24 rounded-full object-cover shadow-2xl border border-white/20 relative z-10" 
+                  alt="peer image" 
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-emerald-900/60 flex items-center justify-center text-3xl font-bold shadow-2xl border border-white/10 relative z-10">
+                  {activeCall.peer?.name ? activeCall.peer.name[0].toUpperCase() : activeCall.peer?.username?.[0]?.toUpperCase() || "📞"}
+                </div>
+              )}
               {isVideo && !isConnected && (
-                <p className="text-xs text-gray-400 font-medium mt-4">Connecting camera feeds...</p>
+                <p className="text-xs text-gray-400 font-medium mt-6">Connecting camera feeds...</p>
               )}
             </div>
+          )}
+
+          {/* Hidden audio element for voice calls to play remote audio stream */}
+          {!isVideo && isConnected && (
+            <audio 
+              ref={remoteAudioRef} 
+              autoPlay 
+              playsInline 
+              className="hidden" 
+            />
           )}
 
           {/* Dynamic Call Controllers */}
@@ -539,11 +583,11 @@ export function CallOverlay({
               onClick={toggleMic}
               className={cn(
                 "w-12 h-12 flex items-center justify-center rounded-full transition-all cursor-pointer border border-white/10 active:scale-95",
-                micMuted ? "bg-red-500/20 text-red-400" : "bg-white/10 hover:bg-white/20"
+                micMuted ? "bg-red-50/20 text-red-400" : "bg-white/10 hover:bg-white/20"
               )}
               title={micMuted ? "Unmute Mic" : "Mute Mic"}
             >
-              {micMuted ? <MicOff size={20} /> : <Mic size={20} />}
+              {micMuted ? <MicOff size={20} className="shrink-0" /> : <Mic size={20} className="shrink-0" />}
             </button>
 
             {isVideo && (
@@ -551,20 +595,20 @@ export function CallOverlay({
                 onClick={toggleVideo}
                 className={cn(
                   "w-12 h-12 flex items-center justify-center rounded-full transition-all cursor-pointer border border-white/10 active:scale-95",
-                  videoDisabled ? "bg-red-500/20 text-red-400" : "bg-white/10 hover:bg-white/20"
+                  videoDisabled ? "bg-red-50/20 text-red-400" : "bg-white/10 hover:bg-white/20"
                 )}
                 title={videoDisabled ? "Enable Camera" : "Disable Camera"}
               >
-                {videoDisabled ? <VideoOff size={20} /> : <Video size={20} />}
+                {videoDisabled ? <VideoOff size={20} className="shrink-0" /> : <Video size={20} className="shrink-0" />}
               </button>
             )}
 
             <button 
               onClick={endCall}
-              className="w-14 h-14 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded-full transition-all cursor-pointer shadow-xl shadow-red-500/20 active:scale-95"
+              className="w-14 h-14 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded-full transition-all cursor-pointer shadow-xl shadow-red-500/20 active:scale-95 shrink-0"
               title="End Call"
             >
-              <PhoneOff size={22} />
+              <PhoneOff size={22} className="shrink-0" />
             </button>
           </div>
 
