@@ -17,6 +17,7 @@ interface ProfileHeaderProps {
   onFollowersClick?: () => void;
   onFollowingClick?: () => void;
   onMessageClick?: () => void;
+  isLoadingMessage?: boolean;
 }
 
 export function ProfileHeader({
@@ -32,6 +33,7 @@ export function ProfileHeader({
   onFollowersClick,
   onFollowingClick,
   onMessageClick,
+  isLoadingMessage = false,
 }: ProfileHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -183,6 +185,7 @@ export function ProfileHeader({
             onLogout={onLogout}
             onToggleFollow={onToggleFollow}
             onMessageClick={onMessageClick}
+            isLoadingMessage={isLoadingMessage}
           />
         </div>
 
@@ -258,6 +261,7 @@ export function ProfileHeader({
           onLogout={onLogout}
           onToggleFollow={onToggleFollow}
           onMessageClick={onMessageClick}
+          isLoadingMessage={isLoadingMessage}
           isMobile={true}
         />
       </div>

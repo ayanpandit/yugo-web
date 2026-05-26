@@ -21,6 +21,7 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
   
   const [isEditing, setIsEditing] = useState(false);
   const [connectionsType, setConnectionsType] = useState<"followers" | "following" | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState(false);
 
   const isOwner = loggedInUser?.username === username;
 
@@ -87,8 +88,9 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
       router.push("/login");
       return;
     }
-    if (!profileData?.user?.id) return;
+    if (!profileData?.user?.id || loadingMessage) return;
     
+    setLoadingMessage(true);
     try {
       const res = await apiFetch(`/api/v1/conversations/direct/${profileData.user.id}`, {
         method: "POST",
@@ -100,6 +102,8 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
       }
     } catch (err) {
       console.error("Failed to start or retrieve direct conversation:", err);
+    } finally {
+      setLoadingMessage(false);
     }
   };
 
@@ -161,6 +165,7 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
           onFollowersClick={() => setConnectionsType(connectionsType === "followers" ? null : "followers")}
           onFollowingClick={() => setConnectionsType(connectionsType === "following" ? null : "following")}
           onMessageClick={handleMessage}
+          isLoadingMessage={loadingMessage}
         />
 
         <ProfileConnectionsDrawer

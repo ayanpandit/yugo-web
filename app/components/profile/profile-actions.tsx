@@ -10,6 +10,7 @@ interface ProfileActionsProps {
   onLogout: () => void;
   onToggleFollow: () => void;
   onMessageClick?: () => void;
+  isLoadingMessage?: boolean;
   isMobile?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function ProfileActions({
   onLogout,
   onToggleFollow,
   onMessageClick,
+  isLoadingMessage = false,
   isMobile = false
 }: ProfileActionsProps) {
   if (isLoadingAuth) {
@@ -73,9 +75,21 @@ export function ProfileActions({
             </button>
             <button
               onClick={onMessageClick}
-              className="flex-1 py-2 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer"
+              disabled={isLoadingMessage}
+              className={`flex-1 py-2 font-bold text-xs rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1 ${
+                isLoadingMessage
+                  ? "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] cursor-pointer"
+              }`}
             >
-              Message
+              {isLoadingMessage ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  <span>Loading...</span>
+                </>
+              ) : (
+                "Message"
+              )}
             </button>
           </>
         )}
@@ -115,9 +129,21 @@ export function ProfileActions({
           </button>
           <button
             onClick={onMessageClick}
-            className="px-8 py-1.5 bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer"
+            disabled={isLoadingMessage}
+            className={`px-8 py-1.5 font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 ${
+              isLoadingMessage
+                ? "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50 active:scale-[0.98] cursor-pointer"
+            }`}
           >
-            Message
+            {isLoadingMessage ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                <span>Loading...</span>
+              </>
+            ) : (
+              "Message"
+            )}
           </button>
         </>
       )}
