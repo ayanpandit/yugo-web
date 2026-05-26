@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, Volume2, Shield } from "lucide-react";
+import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, Shield } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 interface CallOverlayProps {
@@ -30,11 +30,184 @@ export function CallOverlay({
   
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isFirstRenderRef = useRef(true);
+
+  // Synthesized calling audio contexts
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const ringtoneIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const isVideo = activeCall?.type === "video" || incomingCall?.type === "video";
   const isCaller = activeCall?.role === "caller";
   const isConnected = activeCall?.status === "connected";
+
+  const stopAllSounds = () => {
+    if (ringtoneIntervalRef.current) {
+      clearInterval(ringtoneIntervalRef.current);
+      ringtoneIntervalRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      if (audioCtxRef.current.state !== "closed") {
+        audioCtxRef.current.close();
+      }
+      audioCtxRef.current = null;
+    }
+  };
+
+  const startIncomingRingtone = () => {
+    stopAllSounds();
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    
+    const ctx = new AudioContextClass();
+    audioCtxRef.current = ctx;
+
+    const playPulse = () => {
+      if (ctx.state === "closed") return;
+      
+      const now = ctx.currentTime;
+      // Synthesize clean electronic dual-frequency ringtone pulses
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc1.frequency.value = 853;
+      osc2.frequency.value = 960;
+      
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.12, now + 0.1);
+      gain.gain.setValueAtTime(0.12, now + 1.2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 1.5);
+      osc2.stop(now + 1.5);
+    };
+
+    playPulse();
+    ringtoneIntervalRef.current = setInterval(playPulse, 2000);
+  };
+
+  const startOutgoingRingtone = () => {
+    stopAllSounds();
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const ctx = new AudioContextClass();
+    audioCtxRef.current = ctx;
+
+    const playDialtone = () => {
+      if (ctx.state === "closed") return;
+
+      const now = ctx.currentTime;
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      // Standard telephone dial ringback: 440Hz + 480Hz
+      osc1.frequency.value = 440;
+      osc2.frequency.value = 480;
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.06, now + 0.1);
+      gain.gain.setValueAtTime(0.06, now + 1.8);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 2.1);
+      osc2.stop(now + 2.1);
+    };
+
+    playDialtone();
+    ringtoneIntervalRef.current = setInterval(playDialtone, 4000);
+  };
+
+  const playJoinBlip = () => {
+    stopAllSounds();
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const ctx = new AudioContextClass();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
+
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.2);
+  };
+
+  const playDisconnectBlip = () => {
+    stopAllSounds();
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const ctx = new AudioContextClass();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.linearRampToValueAtTime(180, now + 0.25);
+
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.3);
+  };
+
+  // calling audio synthesizer effect hooks
+  useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      if (!incomingCall && !activeCall) return;
+    }
+
+    if (incomingCall) {
+      console.log("[CallingSounds] Playing incoming ringtone pulse...");
+      startIncomingRingtone();
+    } else if (activeCall) {
+      if (activeCall.status === "ringing") {
+        console.log("[CallingSounds] Playing outgoing dialtone pulses...");
+        startOutgoingRingtone();
+      } else if (activeCall.status === "connected") {
+        console.log("[CallingSounds] Connection established, triggering blip...");
+        playJoinBlip();
+      }
+    } else {
+      console.log("[CallingSounds] Call terminated, playing blip...");
+      playDisconnectBlip();
+    }
+
+    return () => {
+      stopAllSounds();
+    };
+  }, [incomingCall, activeCall?.status]);
 
   // connection call timer
   useEffect(() => {
@@ -199,8 +372,8 @@ export function CallOverlay({
   if (!incomingCall && !activeCall) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#071414]/90 backdrop-blur-xl animate-[fadeIn_0.3s_ease-out] font-sans text-white">
-      <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/20 via-transparent to-black/40 pointer-events-none" />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#071414]/95 backdrop-blur-xl animate-[fadeIn_0.2s_ease-out] font-sans text-white">
+      <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/35 via-transparent to-black/50 pointer-events-none" />
 
       {incomingCall ? (
         // 📞 INCOMING CALL VIEWPORT
