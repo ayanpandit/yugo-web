@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Smile, Paperclip, Mic, CheckCheck, Square, Trash2 } from "lucide-react";
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Smile, Paperclip, Mic, CheckCheck, Square, Trash2, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { apiFetch } from "@/app/lib/api";
 import { useAuth } from "@/app/components/providers/auth-provider";
@@ -22,6 +22,7 @@ interface Message {
     name: string | null;
     image: string | null;
   };
+  status?: "sending" | "sent" | "failed";
 }
 
 interface Participant {
@@ -30,6 +31,292 @@ interface Participant {
   name: string | null;
   image: string | null;
 }
+
+// 🎙️ Dynamic, Memoized Message Item Component to avoid redundant re-renders
+const MessageBubble = React.memo(({ 
+  msg, 
+  isMe, 
+  onRetry,
+  formatMessageTime,
+  renderMessageContent
+}: { 
+  msg: Message; 
+  isMe: boolean; 
+  onRetry: (msg: Message) => void;
+  formatMessageTime: (dateStr: string) => string;
+  renderMessageContent: (msg: Message) => React.ReactNode;
+}) => {
+  const isSending = msg.status === "sending";
+  const isFailed = msg.status === "failed";
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col max-w-[85%] md:max-w-[70%] transition-all",
+        isMe ? "ml-auto items-end" : "mr-auto items-start",
+        isSending && "opacity-70"
+      )}
+    >
+      <div
+        className={cn(
+          "px-4 py-3 rounded-2xl md:rounded-3xl text-[13px] md:text-sm shadow-sm break-words max-w-full relative group transition-all",
+          isMe 
+            ? isFailed 
+              ? "bg-red-50 text-red-700 border border-red-200 rounded-tr-none"
+              : "bg-green-500 text-white rounded-tr-none shadow-green-50" 
+            : "bg-white text-gray-700 rounded-tl-none border border-gray-100 shadow-gray-50"
+        )}
+      >
+        {renderMessageContent(msg)}
+        
+        {/* Dynamic Status Badges */}
+        {isSending && (
+          <span className="absolute bottom-1 right-2 w-1.5 h-1.5 border border-white border-t-transparent rounded-full animate-spin pointer-events-none" />
+        )}
+      </div>
+
+      <div className="flex items-center gap-1.5 mt-2 px-1">
+        <span className="text-[10px] text-gray-400 font-medium">
+          {formatMessageTime(msg.createdAt)}
+        </span>
+        
+        {isMe && !isFailed && !isSending && (
+          <span title={msg.seenAt ? `Read at ${formatMessageTime(msg.seenAt)}` : "Delivered"}>
+            <CheckCheck 
+              size={12} 
+              className={cn(msg.seenAt ? "text-blue-500" : "text-gray-300")} 
+            />
+          </span>
+        )}
+
+        {isFailed && (
+          <button 
+            onClick={() => onRetry(msg)}
+            className="flex items-center gap-1 text-[10px] text-red-500 font-bold hover:underline cursor-pointer"
+            title="Retry sending"
+          >
+            <AlertCircle size={10} />
+            <span>Failed. Tap to retry</span>
+            <RefreshCw size={8} className="animate-spin-slow ml-0.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+});
+
+MessageBubble.displayName = "MessageBubble";
+
+// 📝 Isolated Chat Input Component to prevent whole page re-renders on keystroke
+interface ChatInputProps {
+  onSendMessage: (text: string) => void;
+  onUploadMedia: (file: File | Blob, fileType: string) => void;
+  sending: boolean;
+  uploading: boolean;
+  socket: any;
+  conversationId: string;
+}
+
+const ChatInput = React.memo(({
+  onSendMessage,
+  onUploadMedia,
+  sending,
+  uploading,
+  socket,
+  conversationId
+}: ChatInputProps) => {
+  const [messageInput, setMessageInput] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessageInput(e.target.value);
+
+    // Dynamic Ephemeral Typing Relay (Isolated within the sub-component state)
+    if (socket && conversationId) {
+      socket.emit("typing:start", { conversationId });
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("typing:stop", { conversationId });
+      }, 2000);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = messageInput.trim();
+    if (!text || sending || uploading) return;
+
+    onSendMessage(text);
+    setMessageInput("");
+
+    if (socket && conversationId) {
+      socket.emit("typing:stop", { conversationId });
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    onUploadMedia(file, file.type);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        setIsRecording(false);
+        onUploadMedia(audioBlob, "audio/webm");
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingSeconds(0);
+
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error("Mic access rejected:", err);
+      alert("Microphone permission is required to send voice notes");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.onstop = () => {
+        setIsRecording(false);
+      };
+      mediaRecorderRef.current.stop();
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    }
+  };
+
+  return (
+    <div className="p-4 md:p-6 bg-white border-t border-gray-100 shrink-0">
+      <div className="max-w-4xl mx-auto flex flex-col gap-2">
+        {isRecording ? (
+          // 🎙️ Microphone Recording Viewport
+          <div className="flex items-center justify-between bg-red-50 border border-red-200 px-6 py-3.5 rounded-[24px]">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+              <span className="text-sm font-bold text-red-600 font-mono">
+                Recording Voice Note: {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, "0")}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button 
+                type="button" 
+                onClick={cancelRecording}
+                className="p-2.5 bg-white text-gray-400 hover:text-red-500 border border-gray-200 rounded-full transition-all active:scale-95 shadow-sm cursor-pointer"
+                title="Cancel Recording"
+              >
+                <Trash2 size={16} />
+              </button>
+              <button 
+                type="button" 
+                onClick={stopRecording}
+                className="p-3 bg-red-500 text-white rounded-full shadow-lg shadow-red-200 transition-all active:scale-90 flex items-center justify-center shrink-0 cursor-pointer"
+                title="Stop and Send"
+              >
+                <Square size={16} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          // 📝 Standard Form Input Viewport
+          <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-gray-50 px-4 py-2 md:py-3 rounded-[24px] border border-gray-200">
+            <button type="button" className="hidden sm:block p-2 text-gray-400 hover:text-gray-600 transition-colors">
+              <Smile size={22} />
+            </button>
+            
+            <button 
+              type="button" 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={sending || uploading}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <Paperclip size={20} />
+            </button>
+            <input 
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
+            />
+            
+            <input 
+              type="text" 
+              value={messageInput}
+              onChange={handleInputChange}
+              placeholder="Type a message..." 
+              className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 placeholder:text-gray-300 font-medium py-1.5"
+              disabled={sending || uploading}
+            />
+            
+            {messageInput.trim() ? (
+              <button 
+                type="submit"
+                disabled={sending || uploading}
+                className="p-3 bg-green-500 text-white rounded-full shadow-lg shadow-green-100 transition-transform active:scale-90 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50"
+              >
+                <Send size={18} />
+              </button>
+            ) : (
+              <button 
+                type="button"
+                onClick={startRecording}
+                disabled={sending || uploading}
+                className="p-3 bg-white text-gray-400 rounded-full shadow-sm hover:text-green-500 transition-all active:scale-90 flex items-center justify-center border border-gray-100 shrink-0 cursor-pointer disabled:opacity-50"
+              >
+                <Mic size={20} />
+              </button>
+            )}
+          </form>
+        )}
+      </div>
+    </div>
+  );
+});
+
+ChatInput.displayName = "ChatInput";
 
 export default function ConversationPage() {
   const params = useParams();
@@ -40,21 +327,13 @@ export default function ConversationPage() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [participant, setParticipant] = useState<Participant | null>(null);
-  const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // Media uploads & Voice Note states
+  // Media uploads indicators
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingSeconds, setRecordingSeconds] = useState(0);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialLoadRef = useRef(true);
 
@@ -161,179 +440,218 @@ export default function ConversationPage() {
     }
   }, [messages, socket, currentUser]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessageInput(e.target.value);
+  // 🚀 OPTIMISTIC TEXT MESSAGE DISPATCH (Instant render, asynchronous background save)
+  const handleSendMessage = useCallback(async (text: string) => {
+    if (!currentUser) return;
+    const tempId = `opt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const optimisticMessage: Message = {
+      messageId: tempId,
+      text,
+      type: "TEXT",
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: currentUser.id,
+        username: currentUser.username,
+        name: currentUser.name ?? null,
+        image: currentUser.image ?? null
+      },
+      status: "sending"
+    };
 
-    // Dynamic Ephemeral Typing Relay
-    if (socket && conversationId) {
-      socket.emit("typing:start", { conversationId });
+    // 1. Instantly append optimistically
+    setMessages((prev) => [...prev, optimisticMessage]);
 
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
+    // 2. Dispatch background REST persist asynchronously
+    const dispatchMessage = async () => {
+      try {
+        const res = await apiFetch(`/api/v1/conversations/${conversationId}/messages`, {
+          method: "POST",
+          body: JSON.stringify({ text, type: "TEXT" }),
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          const canonicalMessage = result.data;
+
+          // Swap optimistic message for canonical message
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.messageId === tempId
+                ? { ...canonicalMessage, status: "sent" }
+                : msg
+            )
+          );
+        } else {
+          throw new Error("Failed to persist");
+        }
+      } catch (err) {
+        console.error("Background text dispatch failed:", err);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.messageId === tempId
+              ? { ...msg, status: "failed" }
+              : msg
+          )
+        );
       }
+    };
 
-      typingTimeoutRef.current = setTimeout(() => {
-        socket.emit("typing:stop", { conversationId });
-      }, 2000);
-    }
-  };
+    dispatchMessage();
+  }, [conversationId, currentUser]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = messageInput.trim();
-    if (!text || sending) return;
+  // 🚀 RETRY DISPATCH PIPELINE FOR FAILED MESSAGES
+  const handleRetryMessage = useCallback(async (failedMsg: Message) => {
+    if (!failedMsg.text) return;
 
-    setSending(true);
-    // Stop typing immediately upon sending
-    if (socket && conversationId) {
-      socket.emit("typing:stop", { conversationId });
-    }
+    // Reset status back to sending
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.messageId === failedMsg.messageId
+          ? { ...m, status: "sending" }
+          : m
+      )
+    );
 
     try {
       const res = await apiFetch(`/api/v1/conversations/${conversationId}/messages`, {
         method: "POST",
-        body: JSON.stringify({ text, type: "TEXT" }),
+        body: JSON.stringify({ text: failedMsg.text, type: "TEXT" }),
       });
 
       if (res.ok) {
         const result = await res.json();
-        const newMessage = result.data;
-        
-        // Optimistic and instant local append
-        setMessages((prev) => {
-          if (prev.some((m) => m.messageId === newMessage.messageId)) return prev;
-          return [...prev, newMessage];
+        const canonicalMessage = result.data;
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.messageId === failedMsg.messageId
+              ? { ...canonicalMessage, status: "sent" }
+              : m
+          )
+        );
+      } else {
+        throw new Error("Failed to persist on retry");
+      }
+    } catch (err) {
+      console.error("Retry message dispatch failed:", err);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.messageId === failedMsg.messageId
+            ? { ...m, status: "failed" }
+            : m
+        )
+      );
+    }
+  }, [conversationId]);
+
+  // 🚀 OPTIMISTIC MEDIA MESSAGE DISPATCH (Instant local blob URL preview render)
+  const uploadMediaMessage = useCallback(async (fileBlob: Blob | File, fileType: string) => {
+    if (!currentUser) return;
+    const tempId = `opt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Detect messaging category
+    let type: "IMAGE" | "VIDEO" | "AUDIO" | "FILE" = "FILE";
+    if (fileType.startsWith("image/")) type = "IMAGE";
+    else if (fileType.startsWith("video/")) type = "VIDEO";
+    else if (fileType.startsWith("audio/")) type = "AUDIO";
+
+    // Instant local client-side Blob preview reference!
+    const objectUrl = URL.createObjectURL(fileBlob);
+
+    const optimisticMessage: Message = {
+      messageId: tempId,
+      type,
+      mediaUrl: objectUrl,
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: currentUser.id,
+        username: currentUser.username,
+        name: currentUser.name ?? null,
+        image: currentUser.image ?? null
+      },
+      status: "sending"
+    };
+
+    // 1. Instantly append preview
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    // 2. Dispatch background media upload asynchronously
+    const dispatchUpload = async () => {
+      setUploading(true);
+      setUploadProgress(20);
+      try {
+        const formData = new FormData();
+        formData.append("file", fileBlob);
+
+        setUploadProgress(50);
+        const uploadRes = await apiFetch("/api/v1/conversations/media/upload", {
+          method: "POST",
+          body: formData,
         });
-        setMessageInput("");
-      }
-    } catch (err) {
-      console.error("Failed to send text message:", err);
-    } finally {
-      setSending(false);
-    }
-  };
 
-  // Media and generic file uploading pipeline
-  const uploadMediaMessage = async (fileBlob: Blob | File, fileType: string) => {
-    setUploading(true);
-    setUploadProgress(10);
-    try {
-      const formData = new FormData();
-      formData.append("file", fileBlob);
-
-      setUploadProgress(30);
-      const uploadRes = await apiFetch("/api/v1/conversations/media/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      setUploadProgress(70);
-      if (!uploadRes.ok) {
-        throw new Error("Cloudinary file upload failed");
-      }
-
-      const uploadResult = await uploadRes.json();
-      const { url, publicId, type } = uploadResult.data;
-
-      setUploadProgress(90);
-      // Dispatch media message REST persist request
-      const msgRes = await apiFetch(`/api/v1/conversations/${conversationId}/messages`, {
-        method: "POST",
-        body: JSON.stringify({
-          type,
-          mediaUrl: url,
-          mediaPublicId: publicId
-        }),
-      });
-
-      if (msgRes.ok) {
-        const msgResult = await msgRes.json();
-        const newMessage = msgResult.data;
-        setMessages((prev) => [...prev, newMessage]);
-      }
-    } catch (err) {
-      console.error("Media uploading failure:", err);
-      alert("Failed to send attachment, please try again.");
-    } finally {
-      setUploading(false);
-      setUploadProgress(null);
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    uploadMediaMessage(file, file.type);
-  };
-
-  // Voice Note capturing methods
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
+        if (!uploadRes.ok) {
+          throw new Error("Cloudinary file upload failed");
         }
-      };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        setIsRecording(false);
-        await uploadMediaMessage(audioBlob, "audio/webm");
-        
-        // Disable tracks
-        stream.getTracks().forEach((track) => track.stop());
-      };
+        const uploadResult = await uploadRes.json();
+        const { url, publicId } = uploadResult.data;
 
-      mediaRecorder.start();
-      setIsRecording(true);
-      setRecordingSeconds(0);
+        setUploadProgress(80);
+        // Persist canonical message record on server
+        const msgRes = await apiFetch(`/api/v1/conversations/${conversationId}/messages`, {
+          method: "POST",
+          body: JSON.stringify({
+            type,
+            mediaUrl: url,
+            mediaPublicId: publicId
+          }),
+        });
 
-      recordingIntervalRef.current = setInterval(() => {
-        setRecordingSeconds((prev) => prev + 1);
-      }, 1000);
-    } catch (err) {
-      console.error("Mic access rejected:", err);
-      alert("Microphone permission is required to send voice notes");
-    }
-  };
+        if (msgRes.ok) {
+          const msgResult = await msgRes.json();
+          const canonicalMessage = msgResult.data;
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
+          // Swap local Blob URL for production Cloudinary canonical URL
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.messageId === tempId
+                ? { ...canonicalMessage, status: "sent" }
+                : msg
+            )
+          );
+        } else {
+          throw new Error("Canonical persist failed");
+        }
+      } catch (err) {
+        console.error("Background media dispatch failed:", err);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.messageId === tempId
+              ? { ...msg, status: "failed" }
+              : msg
+          )
+        );
+      } finally {
+        setUploading(false);
+        setUploadProgress(null);
       }
-    }
-  };
+    };
 
-  const cancelRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.onstop = () => {
-        setIsRecording(false);
-      };
-      mediaRecorderRef.current.stop();
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
-    }
-  };
+    dispatchUpload();
+  }, [conversationId, currentUser]);
 
-  const formatMessageTime = (dateStr: string) => {
+  const formatMessageTime = useCallback((dateStr: string) => {
     try {
       const date = new Date(dateStr);
       return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     } catch (e) {
       return "";
     }
-  };
+  }, []);
 
-  // Sub-renderer for rich media message layouts
-  const renderMessageContent = (msg: Message) => {
+  // Sub-renderer for rich media message layouts (memoized inside callback)
+  const renderMessageContent = useCallback((msg: Message) => {
     switch (msg.type) {
       case "IMAGE":
         return (
@@ -355,7 +673,7 @@ export default function ConversationPage() {
       case "AUDIO":
         return (
           <div className="flex items-center gap-2 py-1 px-1.5 min-w-[210px]">
-            <Mic size={16} className="text-green-500 animate-pulse" />
+            <Mic size={16} className="text-green-500 animate-pulse shrink-0" />
             <audio src={msg.mediaUrl} controls className="w-full h-8 text-xs accent-green-600 outline-none rounded-lg" />
           </div>
         );
@@ -377,7 +695,7 @@ export default function ConversationPage() {
       default:
         return <span>{msg.text}</span>;
     }
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -460,33 +778,14 @@ export default function ConversationPage() {
           messages.map((msg) => {
             const isMe = msg.sender.id === currentUser?.id;
             return (
-              <div
+              <MessageBubble 
                 key={msg.messageId}
-                className={cn(
-                  "flex flex-col max-w-[85%] md:max-w-[70%] transition-all",
-                  isMe ? "ml-auto items-end" : "mr-auto items-start"
-                )}
-              >
-                <div
-                  className={cn(
-                    "px-4 py-3 rounded-2xl md:rounded-3xl text-[13px] md:text-sm shadow-sm break-words max-w-full",
-                    isMe 
-                      ? "bg-green-500 text-white rounded-tr-none shadow-green-50" 
-                      : "bg-white text-gray-700 rounded-tl-none border border-gray-100 shadow-gray-50"
-                  )}
-                >
-                  {renderMessageContent(msg)}
-                </div>
-                <div className="flex items-center gap-1.5 mt-2 px-1" title={isMe ? (msg.seenAt ? `Read at ${formatMessageTime(msg.seenAt)}` : "Delivered") : undefined}>
-                  <span className="text-[10px] text-gray-400 font-medium">{formatMessageTime(msg.createdAt)}</span>
-                  {isMe && (
-                    <CheckCheck 
-                      size={12} 
-                      className={cn(msg.seenAt ? "text-blue-500" : "text-gray-300")} 
-                    />
-                  )}
-                </div>
-              </div>
+                msg={msg}
+                isMe={isMe}
+                onRetry={handleRetryMessage}
+                formatMessageTime={formatMessageTime}
+                renderMessageContent={renderMessageContent}
+              />
             );
           })
         ) : (
@@ -520,90 +819,15 @@ export default function ConversationPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 md:p-6 bg-white border-t border-gray-100 shrink-0">
-        <div className="max-w-4xl mx-auto flex flex-col gap-2">
-          {isRecording ? (
-            // Native Mic Recorder Viewport
-            <div className="flex items-center justify-between bg-red-50 border border-red-200 px-6 py-3.5 rounded-[24px]">
-              <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
-                <span className="text-sm font-bold text-red-600 font-mono">
-                  Recording Voice Note: {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, "0")}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <button 
-                  type="button" 
-                  onClick={cancelRecording}
-                  className="p-2.5 bg-white text-gray-400 hover:text-red-500 border border-gray-200 rounded-full transition-all active:scale-95 shadow-sm cursor-pointer"
-                  title="Cancel Recording"
-                >
-                  <Trash2 size={16} />
-                </button>
-                <button 
-                  type="button" 
-                  onClick={stopRecording}
-                  className="p-3 bg-red-500 text-white rounded-full shadow-lg shadow-red-200 transition-all active:scale-90 flex items-center justify-center shrink-0 cursor-pointer"
-                  title="Stop and Send"
-                >
-                  <Square size={16} />
-                </button>
-              </div>
-            </div>
-          ) : (
-            // Normal Chat Input Form
-            <form onSubmit={handleSendMessage} className="flex items-center gap-3 bg-gray-50 px-4 py-2 md:py-3 rounded-[24px] border border-gray-200">
-              <button type="button" className="hidden sm:block p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                <Smile size={22} />
-              </button>
-              <button 
-                type="button" 
-                onClick={() => fileInputRef.current?.click()}
-                disabled={sending || uploading}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <Paperclip size={20} />
-              </button>
-              <input 
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
-                accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
-              />
-              
-              <input 
-                type="text" 
-                value={messageInput}
-                onChange={handleInputChange}
-                placeholder="Type a message..." 
-                className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 placeholder:text-gray-300 font-medium py-1.5"
-                disabled={sending || uploading}
-              />
-              
-              {messageInput.trim() ? (
-                <button 
-                  type="submit"
-                  disabled={sending || uploading}
-                  className="p-3 bg-green-500 text-white rounded-full shadow-lg shadow-green-100 transition-transform active:scale-90 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50"
-                >
-                  <Send size={18} />
-                </button>
-              ) : (
-                <button 
-                  type="button"
-                  onClick={startRecording}
-                  disabled={sending || uploading}
-                  className="p-3 bg-white text-gray-400 rounded-full shadow-sm hover:text-green-500 transition-all active:scale-90 flex items-center justify-center border border-gray-100 shrink-0 cursor-pointer disabled:opacity-50"
-                >
-                  <Mic size={20} />
-                </button>
-              )}
-            </form>
-          )}
-        </div>
-      </div>
+      {/* Optimized Isolated Input Component Area */}
+      <ChatInput 
+        onSendMessage={handleSendMessage}
+        onUploadMedia={uploadMediaMessage}
+        sending={sending}
+        uploading={uploading}
+        socket={socket}
+        conversationId={conversationId}
+      />
     </div>
   );
 }

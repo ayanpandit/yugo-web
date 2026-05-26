@@ -228,6 +228,37 @@ export function CallOverlay({
     };
   }, [isConnected]);
 
+  // Helper to cap media bitrates in WebRTC SDP sessions
+  const setMediaBitrate = (sdp: string, mediaType: "audio" | "video", maxBitrate: number): string => {
+    const lines = sdp.split("\r\n");
+    let mediaLineIndex = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].indexOf(`m=${mediaType}`) === 0) {
+        mediaLineIndex = i;
+        break;
+      }
+    }
+
+    if (mediaLineIndex === -1) {
+      return sdp;
+    }
+
+    // Find the next line starting with 'a=' or a new media line
+    let insertIndex = mediaLineIndex + 1;
+    while (insertIndex < lines.length && lines[insertIndex].indexOf("m=") !== 0) {
+      if (lines[insertIndex].indexOf("b=AS:") === 0) {
+        lines[insertIndex] = `b=AS:${maxBitrate}`;
+        return lines.join("\r\n");
+      }
+      insertIndex++;
+    }
+
+    // Insert the b=AS line
+    lines.splice(mediaLineIndex + 1, 0, `b=AS:${maxBitrate}`);
+    return lines.join("\r\n");
+  };
+
   // Clean WebRTC setup & teardown
   useEffect(() => {
     if (!activeCall || activeCall.status !== "connected") return;
@@ -236,10 +267,19 @@ export function CallOverlay({
       try {
         console.log("[WebRTC] Setting up peer connection...");
         
-        // Grab audio/video media streams
+        // Grab audio/video media streams with advanced echo suppression and constraints
         const constraints = {
-          audio: true,
-          video: isVideo ? { facingMode: "user" } : false
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          },
+          video: isVideo ? { 
+            facingMode: "user",
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            frameRate: { ideal: 24 }
+          } : false
         };
 
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -249,7 +289,7 @@ export function CallOverlay({
           localVideoRef.current.srcObject = stream;
         }
 
-        // Establish Peer Connection with free Google STUN servers
+        // Establish Peer Connection with free Google STUN servers and optimized configurations
         const pc = new RTCPeerConnection({
           iceServers: [
             { urls: "stun:stun.l.google.com:19302" },
@@ -284,7 +324,12 @@ export function CallOverlay({
 
         // If caller, send SDP Offer
         if (isCaller) {
-          const offer = await pc.createOffer();
+          let offer = await pc.createOffer();
+          let sdp = setMediaBitrate(offer.sdp || "", "audio", 40); // 40 kbps Opus audio
+          if (isVideo) {
+            sdp = setMediaBitrate(sdp, "video", 500); // 500 kbps VP8/H264 video
+          }
+          offer = new RTCSessionDescription({ type: "offer", sdp });
           await pc.setLocalDescription(offer);
           console.log("[WebRTC] Dispatching SDP Offer invitation");
           socket.emit("call:signal", {
@@ -301,7 +346,12 @@ export function CallOverlay({
             if (signal.type === "offer") {
               console.log("[WebRTC] Storing SDP Offer and replying with SDP Answer");
               await pc.setRemoteDescription(new RTCSessionDescription(signal.offer));
-              const answer = await pc.createAnswer();
+              let answer = await pc.createAnswer();
+              let sdp = setMediaBitrate(answer.sdp || "", "audio", 40);
+              if (isVideo) {
+                sdp = setMediaBitrate(sdp, "video", 500);
+              }
+              answer = new RTCSessionDescription({ type: "answer", sdp });
               await pc.setLocalDescription(answer);
               socket.emit("call:signal", {
                 targetUserId: activeCall.peerId,
