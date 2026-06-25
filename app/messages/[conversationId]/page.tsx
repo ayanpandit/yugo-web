@@ -10,6 +10,7 @@ import { useSocket } from "@/app/components/providers/socket-provider";
 
 interface Message {
   messageId: string;
+  id?: string;
   text?: string;
   type: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" | "FILE";
   mediaUrl?: string;
@@ -799,7 +800,7 @@ export default function ConversationPage() {
             const isMe = msg.sender.id === currentUser?.id;
             return (
               <MessageBubble 
-                key={msg.messageId}
+                key={msg.messageId || msg.id || msg.createdAt}
                 msg={msg}
                 isMe={isMe}
                 onRetry={handleRetryMessage}

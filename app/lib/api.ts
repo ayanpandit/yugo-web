@@ -1,4 +1,6 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+console.log("[api.ts] API_URL is:", API_URL);
+
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_URL}${endpoint}`;

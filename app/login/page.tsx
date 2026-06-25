@@ -15,15 +15,14 @@ export default function LoginPage() {
   const router = useRouter();
   const { refreshSession } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeLogin = async (loginEmail: string, loginPassword: string) => {
     setError("");
     setIsLoading(true);
 
     try {
       const res = await apiFetch("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
 
       const data = await res.json();
@@ -43,6 +42,23 @@ export default function LoginPage() {
       setError(err.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await executeLogin(email, password);
+  };
+
+  const handleGuestLogin = async () => {
+    const guestEmail = process.env.NEXT_PUBLIC_GUEST_EMAIL || "";
+    const guestPassword = process.env.NEXT_PUBLIC_GUEST_PASSWORD || "";
+    setEmail(guestEmail);
+    setPassword(guestPassword);
+    if (guestEmail && guestPassword) {
+      await executeLogin(guestEmail, guestPassword);
+    } else {
+      setError("Guest credentials not found in environment variables.");
     }
   };
   return (
@@ -197,6 +213,16 @@ export default function LoginPage() {
               className="w-full py-4 bg-[#006644] hover:bg-[#005533] active:scale-[0.98] text-white text-sm sm:text-base font-bold rounded-2xl shadow-lg shadow-emerald-950/15 hover:shadow-xl hover:shadow-emerald-950/20 outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all duration-250 mt-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? "Signing in..." : "Sign In"}
+            </button>
+
+            {/* Guest Login Button */}
+            <button 
+              type="button" 
+              disabled={isLoading}
+              onClick={handleGuestLogin}
+              className="w-full py-4 bg-gray-800 hover:bg-gray-900 active:scale-[0.98] text-white text-sm sm:text-base font-bold rounded-2xl shadow-lg shadow-gray-900/15 hover:shadow-xl hover:shadow-gray-900/20 outline-none focus:ring-4 focus:ring-gray-500/20 transition-all duration-250 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Signing in..." : "Guest Login"}
             </button>
           </form>
 
