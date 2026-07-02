@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   const isDashboard = pathname === "/dashboard";
-  const showSidebar = ["/dashboard", "/explore", "/messages", "/post-trip", "/settings"].includes(pathname);
+  const showSidebar = ["/dashboard", "/explore", "/search", "/messages", "/post-trip", "/settings"].includes(pathname);
   const hideHeader = !isDashboard;
 
   return (

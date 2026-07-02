@@ -158,6 +158,8 @@ Following the project's modular pattern, the dashboard uses a layout-first appro
   - **Decoupled API Fetching**: Handled inside `app/services/feed.service.ts` using the secure `apiFetch` utility, completely separating HTTP fetching logic from UI layers.
   - **Lightweight Feed Cards**: The `/explore` route maps modular, performance-optimized cards (`app/components/feed/feed-card.tsx`) using native Next.js lazy-loading. Incorporates robust UI fallbacks for null/missing database values (cover banners, destinations, experience types, and initial-based avatars).
   - **Skeleton Loaders**: Custom skeleton cards (`app/components/feed/feed-skeleton.tsx`) render pulsing gradient placeholder segments to maintain premium layout stability during connection delays.
+- **Search Flow (`/search`)**:
+  - **Modular UI**: Uses `DashboardLayout` for structural consistency and is integrated into the main `SIDEBAR_CONFIG` navigation menu. Displays a user search input and maps result cards or skeletons iteratively based on UI mockup layouts. Designed to eventually hook up to a robust backend index for users and trips.
 
 ## Scripts
 
