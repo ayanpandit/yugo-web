@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, Bell, Lock, Shield, Settings2, Pencil } from "lucide-react";
+import { User, Bell, Lock, Shield, Settings2, Pencil, AlertCircle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSettings } from "../../hooks/useSettings";
+import { cn } from "@/app/lib/utils";
 
 interface SettingsTemplateProps {
   user: any;
@@ -16,8 +18,43 @@ const TABS = [
   { id: "security", label: "Security", icon: Lock },
 ];
 
+interface SettingsToggleProps {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+}
+
+function SettingsToggle({ label, description, checked, onChange, disabled }: SettingsToggleProps) {
+  return (
+    <div className="flex items-center justify-between p-4 bg-gray-50/50 border border-gray-100 rounded-2xl hover:bg-gray-50/80 transition-colors">
+      <div className="flex-1 pr-4 text-left">
+        <h4 className="text-sm font-semibold text-gray-900">{label}</h4>
+        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{description}</p>
+      </div>
+      <button
+        onClick={() => onChange(!checked)}
+        disabled={disabled}
+        className={cn(
+          "w-11 h-6 rounded-full transition-colors relative focus:outline-none cursor-pointer shrink-0 border border-transparent",
+          checked ? "bg-green-500" : "bg-gray-200"
+        )}
+      >
+        <span
+          className={cn(
+            "w-4.5 h-4.5 rounded-full bg-white absolute top-[2px] transition-transform shadow-sm",
+            checked ? "translate-x-5.5" : "translate-x-[2px]"
+          )}
+        />
+      </button>
+    </div>
+  );
+}
+
 export function SettingsTemplate({ user }: SettingsTemplateProps) {
   const [activeTab, setActiveTab] = useState("profile");
+  const { settings, loading, error, updateSetting, retry } = useSettings();
 
   return (
     <div className="flex-1 flex flex-col md:flex-row bg-[#f8fafb] text-[#111] h-full">
@@ -33,7 +70,7 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+                className={`flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   isActive
                     ? "bg-white text-gray-900 shadow-sm border border-gray-200"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
@@ -59,6 +96,7 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
         >
+          {/* Profile Tab */}
           {activeTab === "profile" && (
             <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-10 max-w-4xl shadow-sm">
               <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Personal Information</h3>
@@ -132,7 +170,117 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
             </div>
           )}
 
-          {activeTab !== "profile" && (
+          {/* Privacy settings Tab */}
+          {activeTab === "privacy" && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-10 max-w-4xl shadow-sm space-y-8">
+              <div>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Privacy & Permissions</h3>
+                <p className="text-xs md:text-sm text-gray-500">Configure search discoverability, account privacy, and direct messages boundaries.</p>
+              </div>
+
+              {loading ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-16 bg-gray-100 rounded-2xl"></div>
+                  <div className="h-16 bg-gray-100 rounded-2xl"></div>
+                  <div className="h-20 bg-gray-100 rounded-2xl"></div>
+                </div>
+              ) : error ? (
+                <div className="text-center py-6 bg-red-50/50 rounded-2xl border border-red-100">
+                  <AlertCircle className="text-red-500 mx-auto mb-2" size={28} />
+                  <p className="text-xs text-red-700 font-semibold mb-3">Failed to load privacy settings</p>
+                  <button onClick={retry} className="px-4 py-2 bg-red-100 text-red-800 text-xs font-bold rounded-xl cursor-pointer">
+                    Retry
+                  </button>
+                </div>
+              ) : settings ? (
+                <div className="space-y-4">
+                  <SettingsToggle
+                    label="Private Profile"
+                    description="When enabled, only accepted followers can view your trips, connections list, and activity."
+                    checked={settings.isPrivate}
+                    onChange={(val) => updateSetting("isPrivate", val)}
+                  />
+
+                  <SettingsToggle
+                    label="Discoverable in Search"
+                    description="Allow other travelers to find your username and profile via user search discovery results."
+                    checked={settings.isDiscoverable}
+                    onChange={(val) => updateSetting("isDiscoverable", val)}
+                  />
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 bg-gray-50/50 border border-gray-100 rounded-2xl hover:bg-gray-50/80 transition-colors gap-3">
+                    <div className="flex-1 text-left">
+                      <h4 className="text-sm font-semibold text-gray-900">Direct Messages Permissions</h4>
+                      <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                        Control who can initiate new direct conversations and send you chat messages.
+                      </p>
+                    </div>
+                    <select
+                      value={settings.messagingPermission}
+                      onChange={(e) => updateSetting("messagingPermission", e.target.value as any)}
+                      className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs md:text-sm font-semibold outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-gray-800"
+                    >
+                      <option value="ANYONE">Anyone</option>
+                      <option value="FOLLOWINGS">Followers Only</option>
+                      <option value="NO_ONE">No One</option>
+                    </select>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {/* Notifications Preferences Tab */}
+          {activeTab === "notifications" && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-10 max-w-4xl shadow-sm space-y-8">
+              <div>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Notification Settings</h3>
+                <p className="text-xs md:text-sm text-gray-500">Enable or disable specific notifications for your account.</p>
+              </div>
+
+              {loading ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-16 bg-gray-100 rounded-2xl"></div>
+                  <div className="h-16 bg-gray-100 rounded-2xl"></div>
+                  <div className="h-16 bg-gray-100 rounded-2xl"></div>
+                </div>
+              ) : error ? (
+                <div className="text-center py-6 bg-red-50/50 rounded-2xl border border-red-100">
+                  <AlertCircle className="text-red-500 mx-auto mb-2" size={28} />
+                  <p className="text-xs text-red-700 font-semibold mb-3">Failed to load settings</p>
+                  <button onClick={retry} className="px-4 py-2 bg-red-100 text-red-800 text-xs font-bold rounded-xl cursor-pointer">
+                    Retry
+                  </button>
+                </div>
+              ) : settings ? (
+                <div className="space-y-4">
+                  <SettingsToggle
+                    label="Email Notifications"
+                    description="Receive email summaries, itinerary creation validations, and major security updates."
+                    checked={settings.notifyEmail}
+                    onChange={(val) => updateSetting("notifyEmail", val)}
+                  />
+
+                  <SettingsToggle
+                    label="Message Alerts"
+                    description="Notify you instantly when you receive a direct chat message from another traveler."
+                    checked={settings.notifyMessages}
+                    onChange={(val) => updateSetting("notifyMessages", val)}
+                  />
+
+                  <SettingsToggle
+                    label="Follow Request Notifications"
+                    description="Receive background alerts when other users request to follow your private profile."
+                    checked={settings.notifyFollowRequests}
+                    onChange={(val) => updateSetting("notifyFollowRequests", val)}
+                  />
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {/* Under construction tabs */}
+          {activeTab !== "profile" && activeTab !== "privacy" && activeTab !== "notifications" && (
              <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-10 max-w-4xl shadow-sm min-h-[300px] md:min-h-[400px] flex items-center justify-center text-center">
                 <p className="text-gray-500 font-medium">This section is currently under construction.</p>
              </div>
@@ -142,4 +290,3 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
     </div>
   );
 }
-
