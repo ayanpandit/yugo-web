@@ -14,12 +14,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   const isDashboard = pathname === "/dashboard";
+  const showSidebar = ["/dashboard", "/explore", "/messages", "/post-trip", "/settings"].includes(pathname);
   const hideHeader = !isDashboard;
 
   return (
     <div className="flex min-h-screen bg-[#f8fafb]">
-      {/* Desktop Sidebar (hidden on mobile, and hidden on non-dashboard pages for full-screen immersive view) */}
-      {isDashboard && (
+      {/* Desktop Sidebar */}
+      {showSidebar && (
         <div className="hidden lg:block shrink-0">
           <Sidebar />
         </div>
@@ -64,7 +65,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
         {/* Navigation Action Trigger (Hamburger Menu on Dashboard, Back Arrow on subpages) */}
         <div className="absolute top-5 left-4 z-[60]">
-          {isDashboard ? (
+          {showSidebar ? (
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
               className="w-10 h-10 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center text-gray-800 hover:bg-gray-50 active:scale-95 transition-all lg:hidden cursor-pointer"

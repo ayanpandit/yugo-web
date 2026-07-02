@@ -150,6 +150,9 @@ Following the project's modular pattern, the dashboard uses a layout-first appro
   - **Instagram-Style Sliding Connections**: Includes `<ProfileConnectionsDrawer>` component which dynamically fetches and lists followers or following lists via `GET /api/v1/users/:userId/followers` or `/following` respectively. When clicking stats in `<ProfileStats>`, the connections panel slides open using custom CSS/Tailwind transitions directly beneath the dividing header border line.
   - **Ownership Authorization**: UI conditionally renders self-management controls (Edit Profile, Change Photo) versus public social interactions (Follow/Unfollow) strictly based on `isOwner` logic, with backend verification layers maintaining security.
   - **Social Navigation**: The entire app natively supports social graph routing. Clicking on creators inside Feed cards or Liker lists automatically redirects to their respective public `[username]` profile.
+  - **Settings Dashboard (`/settings`)**:
+    - **Responsive 3-Column Architecture**: Wraps `app/components/settings/settings-template.tsx` inside the central `DashboardLayout`. On desktop, it forms a seamless 3-column view (Primary App Sidebar, Settings Navigation Sidebar, and Dynamic Content). On mobile, the Settings Sidebar gracefully transforms into a horizontally scrollable tab list at the top, ensuring maximum screen real estate for the active form.
+    - **Smooth Transitions**: Utilizes `framer-motion` to handle performant client-side tab switching and animated content panels.
 - **Zustand Feed Store & Discovery Flow (`/explore`)**:
   - **Centralized Feed State**: Managed inside `app/store/feed.store.ts` using Zustand to coordinate discovery feed items (`trips`), loading, and error states globally.
   - **Decoupled API Fetching**: Handled inside `app/services/feed.service.ts` using the secure `apiFetch` utility, completely separating HTTP fetching logic from UI layers.

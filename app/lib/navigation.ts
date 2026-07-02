@@ -1,4 +1,4 @@
-import { LayoutDashboard, Telescope, MessageSquare, Compass, LogOut, Plus } from "lucide-react";
+import { LayoutDashboard, Telescope, MessageSquare, Compass, LogOut, Plus, Settings } from "lucide-react";
 
 export type Role = "ADMIN" | "USER" | "GUEST";
 
@@ -34,6 +34,12 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     title: "Post Trip",
     href: "/post-trip",
     icon: Plus,
+    roles: ["ADMIN", "USER"],
+  },
+  {
+    title: "Settings",
+    href: "/settings",
+    icon: Settings,
     roles: ["ADMIN", "USER"],
   },
 ];
