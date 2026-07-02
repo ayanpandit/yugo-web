@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { Search, Bell, SlidersHorizontal, User } from "lucide-react";
+import { Search, SlidersHorizontal, User } from "lucide-react";
 import { useAuth } from "@/app/components/providers/auth-provider";
+import NotificationsDropdown from "./notifications-dropdown";
 
 export default function Header() {
   const { user } = useAuth();
@@ -42,12 +43,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3 md:gap-4 self-end md:self-start mt-0 md:mt-2">
-          <button className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center relative shadow-sm border border-gray-50 hover:bg-gray-50 transition-colors">
-            <Bell size={18} className="text-gray-600" />
-            <span className="absolute top-2.5 md:top-3 right-2.5 md:right-3 w-3.5 h-3.5 md:w-4 md:h-4 bg-orange-500 border-2 border-white rounded-full flex items-center justify-center text-[7px] md:text-[8px] text-white font-bold">
-              1
-            </span>
-          </button>
+          <NotificationsDropdown />
           
           <Link 
             href="/profile"
