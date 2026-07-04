@@ -1,6 +1,6 @@
-"use strict";
+"use client";
 
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SIDEBAR_CONFIG } from "@/app/lib/navigation";
@@ -9,11 +9,82 @@ import { LogOut } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/app/components/providers/auth-provider";
 import { apiFetch } from "@/app/lib/api";
+import { useUnreadCount } from "../../hooks/useUnreadCount";
+import { useMessageRequests } from "../../hooks/useMessageRequests";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, refreshSession } = useAuth();
+  const { user, userRole, refreshSession } = useAuth();
+
+  const { unreadCount: unreadNotifications, refetch: refetchNotifications } = useUnreadCount();
+  const { checkIsRequest, rejectedIds, acceptedIds, refetch: refetchRequests } = useMessageRequests();
+
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  const fetchUnreadMessages = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await apiFetch("/api/v1/conversations");
+      if (res.ok) {
+        const result = await res.json();
+        const list = result.data || [];
+
+        // Load seen messages map
+        let seenMap: Record<string, string> = {};
+        try {
+          const stored = localStorage.getItem("yougo:seen_messages");
+          seenMap = stored ? JSON.parse(stored) : {};
+        } catch {}
+
+        const count = list.filter((chat: any) => {
+          const lastMsg = chat.lastMessage;
+          if (!lastMsg) return false;
+          if (lastMsg.senderId === user.id) return false; // We sent it
+          
+          if (rejectedIds.has(chat.conversationId)) return false; // Rejected/Deleted
+          
+          // Check if it is a request
+          const isRequest = checkIsRequest(chat);
+          if (isRequest) return false; // Requests don't count towards normal inbox count
+
+          const lastSeenId = seenMap[chat.conversationId];
+          return lastSeenId !== lastMsg.id;
+        }).length;
+
+        setUnreadMessages(count);
+      }
+    } catch (err) {
+      console.error("Failed to load sidebar unread messages count:", err);
+    }
+  }, [user, checkIsRequest, rejectedIds]);
+
+  // Sync count triggers
+  useEffect(() => {
+    if (user) {
+      fetchUnreadMessages();
+      refetchNotifications();
+    }
+  }, [user, fetchUnreadMessages, refetchNotifications, pathname]);
+
+  useEffect(() => {
+    const handleRefetchMessages = () => {
+      refetchRequests();
+      fetchUnreadMessages();
+    };
+
+    const handleRefetchNotifications = () => {
+      refetchNotifications();
+    };
+
+    window.addEventListener("refetch-unread-messages", handleRefetchMessages);
+    window.addEventListener("refetch-unread-count", handleRefetchNotifications);
+
+    return () => {
+      window.removeEventListener("refetch-unread-messages", handleRefetchMessages);
+      window.removeEventListener("refetch-unread-count", handleRefetchNotifications);
+    };
+  }, [fetchUnreadMessages, refetchNotifications, refetchRequests]);
 
   const filteredNav = SIDEBAR_CONFIG.filter((item) =>
     item.roles.includes(userRole)
@@ -27,6 +98,16 @@ export default function Sidebar() {
     } catch (e) {
       console.error("Logout failed", e);
     }
+  };
+
+  const getDynamicBadge = (title: string) => {
+    if (title === "Messages") {
+      return unreadMessages > 0 ? unreadMessages : null;
+    }
+    if (title === "Notifications") {
+      return unreadNotifications > 0 ? unreadNotifications : null;
+    }
+    return null;
   };
 
   return (
@@ -51,6 +132,7 @@ export default function Sidebar() {
         {filteredNav.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const badgeCount = getDynamicBadge(item.title);
 
           return (
             <Link
@@ -67,12 +149,12 @@ export default function Sidebar() {
                 <Icon size={20} className={cn(isActive ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
                 <span className="font-medium text-[15px]">{item.title}</span>
               </div>
-              {item.badge && (
+              {badgeCount !== null && (
                 <span className={cn(
-                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
                   isActive ? "bg-white text-green-500" : "bg-orange-500 text-white"
                 )}>
-                  {item.badge}
+                  {badgeCount}
                 </span>
               )}
             </Link>

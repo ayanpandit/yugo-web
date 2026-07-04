@@ -7,6 +7,7 @@ import { cn } from "@/app/lib/utils";
 import { apiFetch } from "@/app/lib/api";
 import { useAuth } from "@/app/components/providers/auth-provider";
 import { useSocket } from "@/app/components/providers/socket-provider";
+import { useMessageRequests } from "@/app/hooks/useMessageRequests";
 
 interface Message {
   messageId: string;
@@ -330,7 +331,10 @@ export default function ConversationPage() {
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isRequest, setIsRequest] = useState(false);
   
+  const { checkIsRequest, acceptConversation, rejectConversation, acceptedIds } = useMessageRequests();
+
   // Media uploads indicators
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -352,6 +356,7 @@ export default function ConversationPage() {
         const activeChat = result.data?.find((c: any) => c.conversationId === conversationId);
         if (activeChat) {
           setParticipant(activeChat.participant);
+          setIsRequest(checkIsRequest(activeChat));
         }
       }
     } catch (err) {
@@ -437,17 +442,51 @@ export default function ConversationPage() {
     };
   }, [conversationId, socket]);
 
-  // Read receipt checker loop
+  // Sync requests state whenever messages list or accepted IDs changes
   useEffect(() => {
-    if (messages.length > 0 && socket) {
-      const unseenPeerMsg = [...messages]
-        .reverse()
-        .find((m) => m.sender.id !== currentUser?.id && !m.seenAt);
-      if (unseenPeerMsg) {
-        socket.emit("message:seen", { conversationId, messageId: unseenPeerMsg.messageId });
+    if (participant) {
+      const activeChat = {
+        conversationId,
+        participant,
+        lastMessage: messages[messages.length - 1] || null
+      };
+      setIsRequest(checkIsRequest(activeChat));
+    }
+  }, [messages, participant, checkIsRequest, conversationId, acceptedIds]);
+
+  // Read receipt checker loop and local storage seen update
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Find the last message
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg && lastMsg.sender.id !== currentUser?.id) {
+        try {
+          const stored = localStorage.getItem("yougo:seen_messages");
+          const seenMap = stored ? JSON.parse(stored) : {};
+          const msgId = lastMsg.messageId || lastMsg.id;
+          if (msgId && seenMap[conversationId] !== msgId) {
+            seenMap[conversationId] = msgId;
+            localStorage.setItem("yougo:seen_messages", JSON.stringify(seenMap));
+            window.dispatchEvent(new CustomEvent("refetch-unread-messages"));
+          }
+        } catch (e) {
+          console.error("Failed to update seen messages locally", e);
+        }
+      }
+      
+      if (socket) {
+        const unseenPeerMsg = [...messages]
+          .reverse()
+          .find((m) => m.sender.id !== currentUser?.id && !m.seenAt);
+        if (unseenPeerMsg) {
+          const msgId = unseenPeerMsg.messageId || unseenPeerMsg.id;
+          if (msgId) {
+            socket.emit("message:seen", { conversationId, messageId: msgId });
+          }
+        }
       }
     }
-  }, [messages, socket, currentUser]);
+  }, [messages, socket, currentUser, conversationId]);
 
   // 🚀 OPTIMISTIC TEXT MESSAGE DISPATCH (Instant render, asynchronous background save)
   const handleSendMessage = useCallback(async (text: string) => {
@@ -840,15 +879,42 @@ export default function ConversationPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Optimized Isolated Input Component Area */}
-      <ChatInput 
-        onSendMessage={handleSendMessage}
-        onUploadMedia={uploadMediaMessage}
-        sending={sending}
-        uploading={uploading}
-        socket={socket}
-        conversationId={conversationId}
-      />
+      {/* Optimized Isolated Input Component Area or Accept/Reject request overlay */}
+      {isRequest ? (
+        <div className="p-5 md:p-6 bg-white border-t border-gray-100 shrink-0 flex flex-col items-center justify-center gap-3">
+          <p className="text-xs md:text-sm text-gray-500 font-medium text-center leading-relaxed">
+            Do you want to allow <span className="font-bold text-gray-800">@{participant?.username}</span> to message you?
+            <br />
+            They won't know you've seen their message until you accept.
+          </p>
+          <div className="flex items-center gap-3 w-full max-w-sm justify-center">
+            <button
+              onClick={() => acceptConversation(conversationId)}
+              className="flex-1 py-2.5 bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white font-bold text-xs md:text-sm rounded-xl shadow-md transition-all text-center cursor-pointer"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => {
+                rejectConversation(conversationId);
+                router.push("/messages");
+              }}
+              className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 active:scale-[0.98] text-gray-700 font-bold text-xs md:text-sm rounded-xl border border-gray-150 transition-all text-center cursor-pointer"
+            >
+              Delete Request
+            </button>
+          </div>
+        </div>
+      ) : (
+        <ChatInput 
+          onSendMessage={handleSendMessage}
+          onUploadMedia={uploadMediaMessage}
+          sending={sending}
+          uploading={uploading}
+          socket={socket}
+          conversationId={conversationId}
+        />
+      )}
     </div>
   );
 }

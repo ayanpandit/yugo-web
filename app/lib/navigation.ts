@@ -1,4 +1,4 @@
-import { LayoutDashboard, Telescope, MessageSquare, Compass, LogOut, Plus, Settings, Search } from "lucide-react";
+import { LayoutDashboard, Telescope, MessageSquare, Plus, Settings, Search, Bell } from "lucide-react";
 
 export type Role = "ADMIN" | "USER" | "GUEST";
 
@@ -7,7 +7,6 @@ export interface NavItem {
   href: string;
   icon: any;
   roles: Role[];
-  badge?: number;
 }
 
 export const SIDEBAR_CONFIG: NavItem[] = [
@@ -34,7 +33,12 @@ export const SIDEBAR_CONFIG: NavItem[] = [
     href: "/messages",
     icon: MessageSquare,
     roles: ["ADMIN", "USER"],
-    badge: 1,
+  },
+  {
+    title: "Notifications",
+    href: "/notifications",
+    icon: Bell,
+    roles: ["ADMIN", "USER"],
   },
   {
     title: "Post Trip",
