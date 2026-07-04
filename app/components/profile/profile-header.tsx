@@ -11,7 +11,7 @@ interface ProfileHeaderProps {
   isLoadingAuth?: boolean;
   onEditToggle: () => void;
   onLogout: () => void;
-  isFollowing: boolean;
+  relationshipStatus: string;
   onToggleFollow: () => void;
   onRefreshSession: () => void;
   onFollowersClick?: () => void;
@@ -27,7 +27,7 @@ export function ProfileHeader({
   isLoadingAuth,
   onEditToggle,
   onLogout,
-  isFollowing,
+  relationshipStatus,
   onToggleFollow,
   onRefreshSession,
   onFollowersClick,
@@ -180,7 +180,7 @@ export function ProfileHeader({
             isOwner={isOwner}
             isEditing={isEditing}
             isLoadingAuth={isLoadingAuth}
-            isFollowing={isFollowing}
+            relationshipStatus={relationshipStatus}
             onEditToggle={onEditToggle}
             onLogout={onLogout}
             onToggleFollow={onToggleFollow}
@@ -256,7 +256,7 @@ export function ProfileHeader({
           isOwner={isOwner}
           isEditing={isEditing}
           isLoadingAuth={isLoadingAuth}
-          isFollowing={isFollowing}
+          relationshipStatus={relationshipStatus}
           onEditToggle={onEditToggle}
           onLogout={onLogout}
           onToggleFollow={onToggleFollow}

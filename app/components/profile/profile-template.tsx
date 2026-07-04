@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/app/lib/api";
 import { useAuth } from "@/app/components/providers/auth-provider";
@@ -6,6 +8,7 @@ import { ProfileHeader } from "./profile-header";
 import { ProfileEditForm } from "./profile-edit-form";
 import { ProfileTripsGrid } from "./profile-trips-grid";
 import { ProfileConnectionsDrawer } from "./profile-connections-drawer";
+import { useRelationship } from "@/app/hooks/useRelationship";
 
 interface ProfileTemplateProps {
   username: string;
@@ -14,6 +17,7 @@ interface ProfileTemplateProps {
 export function ProfileTemplate({ username }: ProfileTemplateProps) {
   const { user: loggedInUser, refreshSession, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
+  const { follow, cancel, unfollow } = useRelationship();
   
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -25,31 +29,34 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
 
   const isOwner = loggedInUser?.username === username;
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        setLoading(true);
-        // We use the new GET /profile/:username endpoint
-        const res = await apiFetch(`/profile/${username}`);
-        
-        if (res.ok) {
-          const result = await res.json();
-          setProfileData(result.data);
-        } else {
-          setError("Profile not found");
-        }
-      } catch (err) {
-        setError("An error occurred loading the profile");
-      } finally {
-        setLoading(false);
+  const fetchProfile = useCallback(async () => {
+    try {
+      // We use the new GET /profile/:username endpoint
+      const res = await apiFetch(`/profile/${username}`);
+      
+      if (res.ok) {
+        const result = await res.json();
+        setProfileData(result.data);
+      } else {
+        setError("Profile not found");
       }
+    } catch (err) {
+      setError("An error occurred loading the profile");
+    }
+  }, [username]);
+
+  useEffect(() => {
+    async function loadInitialProfile() {
+      setLoading(true);
+      await fetchProfile();
+      setLoading(false);
+      setConnectionsType(null); // Reset drawer on user change
     }
 
     if (username) {
-      fetchProfile();
-      setConnectionsType(null); // Reset drawer on user change
+      loadInitialProfile();
     }
-  }, [username, isOwner]);
+  }, [username, isOwner, fetchProfile]);
 
   const handleLogout = async () => {
     try {
@@ -68,18 +75,23 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
     }
     if (!profileData?.user?.id) return;
     
+    const targetUserId = profileData.user.id;
+    const currentStatus = profileData.relationship?.status || "NONE";
+
     try {
-      const res = await apiFetch(`/api/v1/users/${profileData.user.id}/follow`, { method: "POST" });
-      if (res.ok) {
-        const result = await res.json();
-        setProfileData((prev: any) => ({
-          ...prev,
-          isFollowing: result.data.following,
-          followersCount: result.data.followersCount,
-        }));
+      let nextStatus = "NONE";
+      if (currentStatus === "ACCEPTED") {
+        nextStatus = await unfollow(targetUserId);
+      } else if (currentStatus === "PENDING") {
+        nextStatus = await cancel(targetUserId);
+      } else {
+        nextStatus = await follow(targetUserId);
       }
+
+      // Re-fetch profile to update followers stats and relationship states directly from cache-aside db
+      await fetchProfile();
     } catch (err) {
-      console.error("Toggle follow failed:", err);
+      console.error("Toggle follow action failed:", err);
     }
   };
 
@@ -108,15 +120,10 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
   };
 
   const handleRefreshProfile = async () => {
-    // Re-fetch logic or just refresh session for owner
     if (isOwner) {
       await refreshSession();
-      const res = await apiFetch(`/profile/${username}`);
-      if (res.ok) {
-        const result = await res.json();
-        setProfileData(result.data);
-      }
     }
+    await fetchProfile();
   };
 
   if (loading) {
@@ -142,7 +149,6 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
     );
   }
 
-  // If viewing own profile, map tripsCount locally for consistency
   const displayUser = {
     ...profileData.user,
     followersCount: profileData.followersCount,
@@ -159,7 +165,7 @@ export function ProfileTemplate({ username }: ProfileTemplateProps) {
           isLoadingAuth={isAuthLoading}
           onEditToggle={() => setIsEditing(!isEditing)}
           onLogout={handleLogout}
-          isFollowing={profileData.isFollowing}
+          relationshipStatus={profileData.relationship?.status || "NONE"}
           onToggleFollow={handleToggleFollow}
           onRefreshSession={handleRefreshProfile}
           onFollowersClick={() => setConnectionsType(connectionsType === "followers" ? null : "followers")}

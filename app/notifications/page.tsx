@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useState } from "react";
 import DashboardLayout from "../components/dashboard/dashboard-layout";
-import { Bell, Check, User, Heart, MessageCircle, AlertCircle, RefreshCw } from "lucide-react";
+import { Bell, Check, User, Heart, MessageCircle, AlertCircle, RefreshCw, X, Trash2 } from "lucide-react";
 import { useNotifications } from "../hooks/useNotifications";
+import { useRelationship } from "../hooks/useRelationship";
 import { useAuth } from "@/app/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import { NotificationType } from "../types/social";
@@ -25,8 +26,17 @@ export default function NotificationsPage() {
     fetchNextPage,
     markRead,
     markAllRead,
+    deleteNotification,
     retry,
   } = useNotifications(15, "ALL");
+
+  const { accept, reject } = useRelationship();
+
+  // Track loading state for individual action buttons
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Track locally resolved follow requests: ID -> "ACCEPTED" | "REJECTED"
+  const [resolvedRequests, setResolvedRequests] = useState<Record<string, "ACCEPTED" | "REJECTED">>({});
 
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -89,6 +99,33 @@ export default function NotificationsPage() {
         return `sent a system notification.`;
       default:
         return `sent you an update.`;
+    }
+  };
+
+  const handleAccept = async (notificationId: string, actorId: string) => {
+    setActionLoading(notificationId);
+    try {
+      await accept(actorId);
+      setResolvedRequests((prev) => ({ ...prev, [notificationId]: "ACCEPTED" }));
+      // Mark as read automatically when resolving request
+      await markRead(notificationId);
+    } catch (err) {
+      console.error("Failed to accept follow request:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (notificationId: string, actorId: string) => {
+    setActionLoading(notificationId);
+    try {
+      await reject(actorId);
+      setResolvedRequests((prev) => ({ ...prev, [notificationId]: "REJECTED" }));
+      await markRead(notificationId);
+    } catch (err) {
+      console.error("Failed to reject follow request:", err);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -193,6 +230,7 @@ export default function NotificationsPage() {
                     notification.actor?.name || notification.actor?.username || "Someone";
                   const isLast = idx === items.length - 1;
                   const isUnread = !notification.isRead;
+                  const resolvedStatus = resolvedRequests[notification.id];
 
                   return (
                     <div
@@ -207,50 +245,90 @@ export default function NotificationsPage() {
                         }
                       }}
                       className={cn(
-                        "flex items-start gap-4 p-5 hover:bg-gray-50/30 transition-all cursor-pointer",
+                        "flex items-start justify-between gap-4 p-5 hover:bg-gray-50/30 transition-all cursor-pointer",
                         isUnread ? "bg-green-50/10" : "bg-transparent"
                       )}
                     >
-                      {/* Actor Avatar */}
-                      <div className="relative shrink-0">
-                        {notification.actor?.image ? (
-                          <div className="w-11 h-11 rounded-full overflow-hidden bg-gray-100 border border-gray-200 relative">
-                            <Image
-                              src={notification.actor.image}
-                              alt={actorName}
-                              fill
-                              className="object-cover"
-                            />
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
+                        {/* Actor Avatar */}
+                        <div className="relative shrink-0">
+                          {notification.actor?.image ? (
+                            <div className="w-11 h-11 rounded-full overflow-hidden bg-gray-100 border border-gray-200 relative">
+                              <Image
+                                src={notification.actor.image}
+                                alt={actorName}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-11 h-11 rounded-full bg-green-50 text-green-700 flex items-center justify-center font-bold text-sm uppercase">
+                              {actorName.slice(0, 2)}
+                            </div>
+                          )}
+                          <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white rounded-full border border-gray-100 flex items-center justify-center shadow-sm">
+                            {getIconForType(notification.type)}
                           </div>
-                        ) : (
-                          <div className="w-11 h-11 rounded-full bg-green-50 text-green-700 flex items-center justify-center font-bold text-sm uppercase">
-                            {actorName.slice(0, 2)}
-                          </div>
-                        )}
-                        <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white rounded-full border border-gray-100 flex items-center justify-center shadow-sm">
-                          {getIconForType(notification.type)}
+                        </div>
+
+                        {/* Notification content text */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                            <span className="font-bold text-gray-900">{actorName}</span>{" "}
+                            {getNotificationText(notification.type)}
+                          </p>
+                          <span className="text-[10px] font-semibold text-gray-400 mt-1 block">
+                            {new Date(notification.createdAt).toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Notification content text */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                          <span className="font-bold text-gray-900">{actorName}</span>{" "}
-                          {getNotificationText(notification.type)}
-                        </p>
-                        <span className="text-[10px] font-semibold text-gray-400 mt-1 block">
-                          {new Date(notification.createdAt).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
+                      {/* Action triggers (Accept/Reject or Mark read) */}
+                      <div className="shrink-0 flex items-center gap-4 self-center">
+                        {notification.type === "FOLLOW_REQUEST" && (
+                          <div className="flex items-center gap-2">
+                            {resolvedStatus === "ACCEPTED" ? (
+                              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                                Accepted
+                              </span>
+                            ) : resolvedStatus === "REJECTED" ? (
+                              <span className="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
+                                Rejected
+                              </span>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAccept(notification.id, notification.actorId);
+                                  }}
+                                  disabled={actionLoading === notification.id}
+                                  className="text-xs font-bold text-white bg-green-500 hover:bg-green-600 disabled:bg-gray-300 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleReject(notification.id, notification.actorId);
+                                  }}
+                                  disabled={actionLoading === notification.id}
+                                  className="text-xs font-bold text-gray-750 bg-gray-100 hover:bg-gray-250 disabled:bg-gray-300 px-4 py-2 rounded-xl transition-all cursor-pointer active:scale-95"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
 
-                      {/* Action trigger / Unread dot indicator */}
-                      <div className="shrink-0 flex items-center self-center gap-3">
-                        {isUnread && (
+                        {/* Direct Mark Read triggers for general notifications */}
+                        {notification.type !== "FOLLOW_REQUEST" && isUnread && (
                           <button
                             onClick={async (e) => {
                               e.stopPropagation();
@@ -261,9 +339,23 @@ export default function NotificationsPage() {
                             Mark read
                           </button>
                         )}
+
+                        {/* Unread dot indicator */}
                         {isUnread && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
                         )}
+
+                        {/* Delete notification trigger */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(notification.id);
+                          }}
+                          className="text-gray-400 hover:text-red-500 p-1.5 rounded-full hover:bg-gray-100/50 transition-all shrink-0 cursor-pointer"
+                          title="Delete Notification"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   );

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, Check, User, Heart, MessageCircle, AlertCircle } from "lucide-react";
+import { Bell, Check, User, Heart, MessageCircle, AlertCircle, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/app/lib/utils";
 import Image from "next/image";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useUnreadCount } from "../../hooks/useUnreadCount";
+import { useRelationship } from "../../hooks/useRelationship";
 import { useRouter } from "next/navigation";
 import { NotificationType } from "../../types/social";
 
@@ -16,8 +17,13 @@ export default function NotificationsDropdown() {
   const router = useRouter();
 
   // Load hooks
-  const { items, loading, error, markRead, markAllRead } = useNotifications(10, "ALL");
+  const { items, loading, error, markRead, markAllRead, deleteNotification } = useNotifications(10, "ALL");
   const { unreadCount, refetch: refetchUnreadCount } = useUnreadCount();
+  const { accept, reject } = useRelationship();
+
+  // Track loading and resolved states
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [resolvedRequests, setResolvedRequests] = useState<Record<string, "ACCEPTED" | "REJECTED">>({});
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -75,18 +81,56 @@ export default function NotificationsDropdown() {
     }
   };
 
-  const handleNotificationClick = async (id: string, isRead: boolean, actorUsername: string) => {
+  const handleNotificationClick = async (id: string, isRead: boolean, actorUsername: string, type: NotificationType) => {
+    // Avoid double navigation or navigating when clicking actions
+    if (type === "FOLLOW_REQUEST" && !resolvedRequests[id]) return;
+
     if (!isRead) {
       await markRead(id);
       refetchUnreadCount();
     }
     setIsOpen(false);
-    // Navigate to user's profile
     router.push(`/profile/${actorUsername}`);
   };
 
   const handleMarkAllRead = async () => {
     await markAllRead();
+    refetchUnreadCount();
+  };
+
+  const handleAccept = async (e: React.MouseEvent, notificationId: string, actorId: string) => {
+    e.stopPropagation();
+    setActionLoading(notificationId);
+    try {
+      await accept(actorId);
+      setResolvedRequests((prev) => ({ ...prev, [notificationId]: "ACCEPTED" }));
+      await markRead(notificationId);
+      refetchUnreadCount();
+    } catch (err) {
+      console.error("Failed to accept follow request:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (e: React.MouseEvent, notificationId: string, actorId: string) => {
+    e.stopPropagation();
+    setActionLoading(notificationId);
+    try {
+      await reject(actorId);
+      setResolvedRequests((prev) => ({ ...prev, [notificationId]: "REJECTED" }));
+      await markRead(notificationId);
+      refetchUnreadCount();
+    } catch (err) {
+      console.error("Failed to reject follow request:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = (e: React.MouseEvent, notificationId: string) => {
+    e.stopPropagation();
+    deleteNotification(notificationId);
     refetchUnreadCount();
   };
 
@@ -149,10 +193,12 @@ export default function NotificationsDropdown() {
                   <p className="text-xs text-red-700 font-medium">Failed to load notifications</p>
                 </div>
               ) : items.length > 0 ? (
-                <div className="flex flex-col">
+                <div className="flex flex-col animate-fadeIn">
                   {items.slice(0, 10).map((notification) => {
                     const actorName = notification.actor?.name || notification.actor?.username || "Someone";
                     const isUnread = !notification.isRead;
+                    const resolvedStatus = resolvedRequests[notification.id];
+
                     return (
                       <div
                         key={notification.id}
@@ -160,55 +206,99 @@ export default function NotificationsDropdown() {
                           handleNotificationClick(
                             notification.id,
                             notification.isRead,
-                            notification.actor?.username
+                            notification.actor?.username,
+                            notification.type
                           )
                         }
                         className={cn(
-                          "flex items-start gap-3 p-4 border-b border-gray-50 transition-colors hover:bg-gray-50/50 cursor-pointer text-left",
+                          "flex items-start justify-between gap-3 p-4 border-b border-gray-50 transition-colors hover:bg-gray-50/50 cursor-pointer text-left",
                           isUnread ? "bg-green-50/20" : "bg-transparent"
                         )}
                       >
-                        {/* Avatar */}
-                        <div className="relative shrink-0">
-                          {notification.actor?.image ? (
-                            <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 overflow-hidden relative">
-                              <Image
-                                src={notification.actor.image}
-                                alt={actorName}
-                                fill
-                                className="object-cover"
-                              />
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          {/* Avatar */}
+                          <div className="relative shrink-0">
+                            {notification.actor?.image ? (
+                              <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 overflow-hidden relative">
+                                <Image
+                                  src={notification.actor.image}
+                                  alt={actorName}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-green-50 text-green-700 flex items-center justify-center font-bold text-xs uppercase">
+                                {actorName.slice(0, 2)}
+                              </div>
+                            )}
+                            <div className="absolute -bottom-1 -right-1 w-4.5 h-4.5 bg-white rounded-full border border-gray-100 flex items-center justify-center shadow-sm">
+                              {getIconForType(notification.type)}
                             </div>
-                          ) : (
-                            <div className="w-9 h-9 rounded-full bg-green-50 text-green-700 flex items-center justify-center font-bold text-xs uppercase">
-                              {actorName.slice(0, 2)}
-                            </div>
-                          )}
-                          <div className="absolute -bottom-1 -right-1 w-4.5 h-4.5 bg-white rounded-full border border-gray-100 flex items-center justify-center shadow-sm">
-                            {getIconForType(notification.type)}
+                          </div>
+
+                          {/* Text */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-gray-700 leading-relaxed font-medium">
+                              <span className="font-bold text-gray-900">{actorName}</span>{" "}
+                              {getNotificationText(notification.type, actorName)}
+                            </p>
+                            <span className="text-[9px] font-semibold text-gray-400 mt-1 block">
+                              {new Date(notification.createdAt).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
                           </div>
                         </div>
 
-                        {/* Text */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                            <span className="font-bold text-gray-900">{actorName}</span>{" "}
-                            {getNotificationText(notification.type, actorName)}
-                          </p>
-                          <span className="text-[9px] font-semibold text-gray-400 mt-1 block">
-                            {new Date(notification.createdAt).toLocaleDateString(undefined, {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
+                        {/* Actions */}
+                        <div className="shrink-0 flex items-center gap-2.5 self-center">
+                          {notification.type === "FOLLOW_REQUEST" && (
+                            <div className="flex items-center gap-1.5">
+                              {resolvedStatus === "ACCEPTED" ? (
+                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
+                                  Accepted
+                                </span>
+                              ) : resolvedStatus === "REJECTED" ? (
+                                <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-100">
+                                  Rejected
+                                </span>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={(e) => handleAccept(e, notification.id, notification.actorId)}
+                                    disabled={actionLoading === notification.id}
+                                    className="text-[10px] font-bold text-white bg-green-500 hover:bg-green-600 disabled:bg-gray-300 px-2.5 py-1 rounded-lg transition-all shadow-sm cursor-pointer"
+                                  >
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleReject(e, notification.id, notification.actorId)}
+                                    disabled={actionLoading === notification.id}
+                                    className="text-[10px] font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-300 px-2.5 py-1 rounded-lg transition-all cursor-pointer"
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          )}
 
-                        {/* Unread dot */}
-                        {isUnread && (
-                          <div className="w-2 h-2 rounded-full bg-green-500 shrink-0 mt-1.5" />
-                        )}
+                          {isUnread && notification.type !== "FOLLOW_REQUEST" && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                          )}
+
+                          <button
+                            onClick={(e) => handleDelete(e, notification.id)}
+                            className="text-gray-300 hover:text-red-500 p-1 rounded-full hover:bg-gray-150 transition-colors cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

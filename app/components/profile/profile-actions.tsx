@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react";
 
 interface ProfileActionsProps {
   isOwner: boolean;
-  isFollowing: boolean;
+  relationshipStatus: string;
   isEditing: boolean;
   isLoadingAuth?: boolean;
   onEditToggle: () => void;
@@ -16,7 +16,7 @@ interface ProfileActionsProps {
 
 export function ProfileActions({
   isOwner,
-  isFollowing,
+  relationshipStatus,
   isEditing,
   isLoadingAuth,
   onEditToggle,
@@ -42,6 +42,19 @@ export function ProfileActions({
     );
   }
 
+  const renderFollowButtonText = () => {
+    if (relationshipStatus === "ACCEPTED") return "Following";
+    if (relationshipStatus === "PENDING") return "Requested";
+    return "Follow";
+  };
+
+  const getFollowButtonStyles = () => {
+    if (relationshipStatus === "ACCEPTED" || relationshipStatus === "PENDING") {
+      return "bg-white border border-gray-250 text-gray-750 hover:bg-gray-50";
+    }
+    return "bg-green-500 text-white hover:bg-green-600 border border-green-500";
+  };
+
   if (isMobile) {
     return (
       <div className="flex sm:hidden items-center gap-2 w-full pt-3">
@@ -65,13 +78,9 @@ export function ProfileActions({
           <>
             <button
               onClick={onToggleFollow}
-              className={`flex-1 py-2 font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer ${
-                isFollowing
-                  ? "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50"
-                  : "bg-green-500 text-white hover:bg-green-600 border border-green-500"
-              }`}
+              className={`flex-1 py-2 font-bold text-xs rounded-lg shadow-sm transition-all text-center cursor-pointer ${getFollowButtonStyles()}`}
             >
-              {isFollowing ? "Following" : "Follow"}
+              {renderFollowButtonText()}
             </button>
             <button
               onClick={onMessageClick}
@@ -119,13 +128,9 @@ export function ProfileActions({
         <>
           <button
             onClick={onToggleFollow}
-            className={`px-8 py-1.5 font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer ${
-              isFollowing
-                ? "bg-white border border-gray-250 text-gray-700 hover:bg-gray-50"
-                : "bg-green-500 text-white hover:bg-green-600 border border-green-500"
-            }`}
+            className={`px-8 py-1.5 font-bold text-xs md:text-sm rounded-lg shadow-sm transition-all cursor-pointer ${getFollowButtonStyles()}`}
           >
-            {isFollowing ? "Following" : "Follow"}
+            {renderFollowButtonText()}
           </button>
           <button
             onClick={onMessageClick}
