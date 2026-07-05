@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, Bell, Lock, Shield, Settings2, Pencil, AlertCircle, RefreshCw } from "lucide-react";
+import { User, Bell, Lock, Shield, Settings2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSettings } from "../../hooks/useSettings";
 import { cn } from "@/app/lib/utils";
+import { useAuth } from "../providers/auth-provider";
+import { apiFetch } from "@/app/lib/api";
 
 interface SettingsTemplateProps {
   user: any;
@@ -55,6 +57,71 @@ function SettingsToggle({ label, description, checked, onChange, disabled }: Set
 export function SettingsTemplate({ user }: SettingsTemplateProps) {
   const [activeTab, setActiveTab] = useState("profile");
   const { settings, loading, error, updateSetting, retry } = useSettings();
+  const { refreshSession } = useAuth();
+  
+  // Profile Form State
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    username: user?.username || "",
+    bio: user?.bio || "",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error", text: string } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const handleProfileSubmit = async () => {
+    setIsSaving(true);
+    setSaveMessage(null);
+    try {
+      const res = await apiFetch("/auth/profile", {
+        method: "PUT",
+        body: JSON.stringify({
+          name: formData.name,
+          username: formData.username,
+          bio: formData.bio,
+        }),
+      });
+      if (res.ok) {
+        setSaveMessage({ type: "success", text: "Profile updated successfully!" });
+        refreshSession();
+        setTimeout(() => setSaveMessage(null), 3000);
+      } else {
+        const err = await res.json();
+        setSaveMessage({ type: "error", text: err.message || "Failed to update profile." });
+      }
+    } catch (err) {
+      setSaveMessage({ type: "error", text: "An error occurred while saving." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      const form = new FormData();
+      form.append("image", file);
+
+      const res = await apiFetch("/auth/profile/image", {
+        method: "POST",
+        body: form,
+      });
+
+      if (res.ok) {
+        refreshSession();
+      } else {
+        const errData = await res.json();
+        alert(errData.message || "Failed to upload image");
+      }
+    } catch (err) {
+      alert("An error occurred during image upload");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col md:flex-row bg-[#f8fafb] text-[#111] h-full">
@@ -105,22 +172,25 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
               {/* Avatar Section */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">
                 <div className="relative shrink-0">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-sm bg-gray-200">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-sm bg-gray-200 relative">
                     <img 
-                      src={user?.avatar || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200"} 
+                      src={user?.image || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200"} 
                       alt="Avatar" 
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover transition-opacity ${isUploadingImage ? 'opacity-50' : 'opacity-100'}`}
                     />
+                    {isUploadingImage && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                      </div>
+                    )}
                   </div>
-                  <button className="absolute bottom-0 right-0 w-7 h-7 md:w-8 md:h-8 bg-[#111] rounded-full flex items-center justify-center text-white shadow-md border-2 border-white hover:bg-gray-800 transition-colors">
-                    <Pencil size={12} />
-                  </button>
                 </div>
                 <div className="flex flex-col items-center sm:items-start">
-                  <button className="px-4 py-2 border border-gray-300 text-gray-700 bg-gray-50 hover:bg-gray-100 font-medium text-sm rounded-lg mb-2 transition-colors">
-                    Change Avatar
-                  </button>
-                  <span className="text-[11px] md:text-xs font-semibold text-gray-500">JPG, GIF or PNG. Max size of 800K</span>
+                  <label className="px-4 py-2 border border-gray-300 text-gray-700 bg-gray-50 hover:bg-gray-100 font-medium text-sm rounded-lg mb-2 transition-colors cursor-pointer inline-block">
+                    {isUploadingImage ? 'Uploading...' : 'Change Avatar'}
+                    <input type="file" className="hidden" accept="image/png, image/jpeg, image/gif, image/webp" onChange={handleImageUpload} disabled={isUploadingImage} />
+                  </label>
+                  <span className="text-[11px] md:text-xs font-semibold text-gray-500">JPG, GIF or PNG. Max size of 5MB</span>
                 </div>
               </div>
 
@@ -132,16 +202,29 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
                   <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
                   <input
                     type="text"
-                    defaultValue={user?.name || user?.username || "John Doe"}
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 font-medium transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Username</label>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 font-medium transition-all"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center justify-between">
+                    Email Address <span className="text-xs text-gray-400 font-normal ml-2">(Cannot be changed here)</span>
+                  </label>
                   <input
                     type="email"
-                    defaultValue={user?.email || "john.doe@example.com"}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 font-medium transition-all"
+                    value={user?.email || ""}
+                    disabled
+                    className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 font-medium cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -150,22 +233,44 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
                 <label className="block text-sm font-bold text-gray-700 mb-2">Bio</label>
                 <textarea
                   rows={4}
-                  defaultValue="Product Designer focusing on minimal, highly functional enterprise software interfaces."
+                  value={formData.bio}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  placeholder="Tell us about yourself..."
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 font-medium transition-all resize-none"
                 />
               </div>
               <div className="text-right text-xs font-bold text-gray-500 mb-8">
-                275 characters left
+                {150 - (formData.bio?.length || 0)} characters left
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4">
-                <button className="w-full sm:w-auto px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium text-sm rounded-xl transition-colors shadow-sm">
-                  Cancel
-                </button>
-                <button className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white font-medium text-sm rounded-xl hover:bg-black transition-colors shadow-md">
-                  Save Changes
-                </button>
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-gray-100">
+                <div className="flex-1 text-left w-full sm:w-auto">
+                  {saveMessage && (
+                    <span className={`text-sm font-bold ${saveMessage.type === "success" ? "text-green-600" : "text-red-600"}`}>
+                      {saveMessage.text}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col-reverse sm:flex-row items-center gap-3 w-full sm:w-auto">
+                  <button 
+                    onClick={() => setFormData({ name: user?.name || "", username: user?.username || "", bio: user?.bio || "" })}
+                    className="w-full sm:w-auto px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium text-sm rounded-xl transition-colors shadow-sm cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                  <button 
+                    onClick={handleProfileSubmit}
+                    disabled={isSaving || (formData.bio?.length || 0) > 150}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white font-medium text-sm rounded-xl hover:bg-black transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center min-w-[140px]"
+                  >
+                    {isSaving ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
