@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { User, Bell, Lock, Shield, Settings2, AlertCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { User, Bell, Lock, Shield, Settings2, AlertCircle, FolderOpen, Trash2, Sparkles, PenTool, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSettings } from "../../hooks/useSettings";
 import { cn } from "@/app/lib/utils";
 import { useAuth } from "../providers/auth-provider";
 import { apiFetch } from "@/app/lib/api";
+import { tripDetailService } from "../../services/trip-detail.service";
+import { useRouter } from "next/navigation";
 
 interface SettingsTemplateProps {
   user: any;
@@ -15,6 +17,7 @@ interface SettingsTemplateProps {
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
   { id: "account", label: "Account", icon: Settings2 },
+  { id: "saved", label: "Saved", icon: FolderOpen },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "privacy", label: "Privacy", icon: Shield },
   { id: "security", label: "Security", icon: Lock },
@@ -55,9 +58,20 @@ function SettingsToggle({ label, description, checked, onChange, disabled }: Set
 }
 
 export function SettingsTemplate({ user }: SettingsTemplateProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("profile");
   const { settings, loading, error, updateSetting, retry } = useSettings();
   const { refreshSession } = useAuth();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tabParam = searchParams.get("tab");
+      if (tabParam && TABS.some(t => t.id === tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
   
   // Profile Form State
   const [formData, setFormData] = useState({
@@ -174,9 +188,9 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
                 <div className="relative shrink-0">
                   <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-sm bg-gray-200 relative">
                     <img 
-                      src={user?.image || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200"} 
+                      src={user?.image || "/logo.png"} 
                       alt="Avatar" 
-                      className={`w-full h-full object-cover transition-opacity ${isUploadingImage ? 'opacity-50' : 'opacity-100'}`}
+                      className={`w-full h-full object-cover transition-opacity ${isUploadingImage ? 'opacity-50' : 'opacity-100'} ${!user?.image ? 'p-3 bg-emerald-50' : ''}`}
                     />
                     {isUploadingImage && (
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -384,14 +398,211 @@ export function SettingsTemplate({ user }: SettingsTemplateProps) {
             </div>
           )}
 
+          {/* Saved Tab */}
+          {activeTab === "saved" && (
+            <SavedTripsSection router={router} />
+          )}
+
           {/* Under construction tabs */}
-          {activeTab !== "profile" && activeTab !== "privacy" && activeTab !== "notifications" && (
+          {activeTab !== "profile" && activeTab !== "privacy" && activeTab !== "notifications" && activeTab !== "saved" && (
              <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-10 max-w-4xl shadow-sm min-h-[300px] md:min-h-[400px] flex items-center justify-center text-center">
                 <p className="text-gray-500 font-medium">This section is currently under construction.</p>
              </div>
           )}
         </motion.div>
       </main>
+    </div>
+  );
+}
+
+function SavedTripsSection({ router }: { router: any }) {
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Deletion state
+  const [tripToDelete, setTripToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    async function loadSaved() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await tripDetailService.fetchSavedTrips();
+        setTrips(data);
+      } catch (err: any) {
+        console.error("Failed to load saved trips:", err);
+        setError(err.message || "Unable to retrieve saved trips.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSaved();
+  }, []);
+
+  const handleDelete = async (generationId: string) => {
+    try {
+      setIsDeleting(true);
+      const res = await apiFetch(`/api/v1/generate/${generationId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setTrips(prev => prev.filter(t => t.generationId !== generationId));
+        setTripToDelete(null);
+      } else {
+        alert("Failed to delete the saved expedition.");
+      }
+    } catch (err) {
+      console.error("Error deleting saved trip:", err);
+      alert("An error occurred during deletion.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        {[1, 2, 3].map(n => (
+          <div key={n} className="h-64 bg-gray-150 rounded-3xl"></div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 bg-red-50/50 rounded-[32px] border border-red-100 p-6">
+        <AlertCircle className="text-red-500 mx-auto mb-2" size={28} />
+        <p className="text-sm text-red-700 font-semibold mb-3">{error}</p>
+      </div>
+    );
+  }
+
+  if (trips.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 p-10 max-w-4xl shadow-sm text-center py-20 space-y-4 mx-auto">
+        <div className="h-16 w-16 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto shadow-inner text-2xl">
+          🔖
+        </div>
+        <h3 className="font-extrabold text-gray-800 text-lg">No Saved Trips</h3>
+        <p className="text-gray-400 text-xs md:text-sm max-w-md mx-auto leading-relaxed">
+          You don't have any unpublished trips yet. Create a trip using the manual studio or AI planner and save it to resume editing later!
+        </p>
+        <button
+          onClick={() => router.push("/post-trip")}
+          className="px-6 py-2.5 bg-gray-900 hover:bg-black text-white font-medium text-sm rounded-xl transition-colors cursor-pointer"
+        >
+          Create a Trip
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {trips.map((trip) => {
+          const isAI = trip.type === "AI_model";
+          const destination = trip.destination || "Scenic Destination";
+          const coverImage = trip.coverImage || "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?q=80&w=600";
+          const daysCount = trip.totalDays || 1;
+
+          return (
+            <div
+              key={trip.generationId}
+              className="group bg-white rounded-3xl overflow-hidden border border-gray-150 shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between"
+            >
+              {/* Cover image */}
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  src={coverImage}
+                  alt={destination}
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                />
+                
+                {/* Delete button overlay */}
+                <button
+                  onClick={() => setTripToDelete(trip.generationId)}
+                  className="absolute top-4 right-4 p-2 bg-white/95 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-full backdrop-blur-sm transition-colors z-10 cursor-pointer shadow-sm"
+                  title="Delete Draft"
+                >
+                  <Trash2 size={15} />
+                </button>
+
+                {/* Badge Type */}
+                <div className="absolute bottom-4 left-4 flex gap-1.5">
+                  {isAI ? (
+                    <span className="px-2.5 py-1.5 bg-gradient-to-r from-green-600 to-teal-700 backdrop-blur-md rounded-xl text-[9px] text-white font-black uppercase tracking-wider flex items-center gap-1 shadow-sm border border-emerald-500/20">
+                      <Sparkles size={10} /> AI Plan
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1.5 bg-[#E6F4EA] backdrop-blur-md rounded-xl text-[9px] text-[#006A4E] font-black uppercase tracking-wider flex items-center gap-1 border border-emerald-100 shadow-sm">
+                      <PenTool size={10} /> Manual Draft
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Trip details */}
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div className="space-y-1.5">
+                  <h4 className="font-bold text-gray-900 text-base truncate">
+                    {destination}
+                  </h4>
+                  <div className="flex items-center gap-3 text-xs text-gray-400 font-semibold">
+                    <span className="flex items-center gap-1"><Clock size={12} /> {daysCount} Days</span>
+                    <span>•</span>
+                    <span className="truncate">{trip.experienceType || "Custom"}</span>
+                  </div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pt-1">
+                    Last modified: {new Date(trip.updatedAt).toLocaleDateString()}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => router.push(`/post-trip?mode=${isAI ? "ai" : "manual"}&draftId=${trip.generationId}`)}
+                  className="w-full bg-[#006A4E] hover:bg-[#00523C] text-white py-3 rounded-2xl font-bold text-xs md:text-sm transition-colors shadow-md shadow-emerald-950/10 cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  {isAI ? "Review Itinerary" : "Resume Drafting"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Delete confirmation modal */}
+      {tripToDelete && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full mx-4 shadow-2xl relative animate-[zoomIn_0.2s_ease-out]">
+            <div className="w-16 h-16 bg-red-50 text-red-555 rounded-full flex items-center justify-center mb-6 mx-auto">
+              <AlertCircle size={32} />
+            </div>
+            <h3 className="text-2xl font-extrabold text-gray-900 text-center mb-2">Delete Draft?</h3>
+            <p className="text-gray-500 text-sm text-center mb-8 font-medium leading-relaxed">
+              This action is permanent. Once deleted, this saved draft and all its parameters will be lost.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setTripToDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 py-3.5 px-6 rounded-2xl font-bold text-gray-650 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(tripToDelete)}
+                disabled={isDeleting}
+                className="flex-1 py-3.5 px-6 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-650 shadow-lg shadow-red-500/20 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting ? "Deleting..." : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

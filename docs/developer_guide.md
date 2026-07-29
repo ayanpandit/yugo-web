@@ -153,6 +153,7 @@ Following the project's modular pattern, the dashboard uses a layout-first appro
   - **Settings Dashboard (`/settings`)**:
     - **Responsive 3-Column Architecture**: Wraps `app/components/settings/settings-template.tsx` inside the central `DashboardLayout`. On desktop, it forms a seamless 3-column view (Primary App Sidebar, Settings Navigation Sidebar, and Dynamic Content). On mobile, the Settings Sidebar gracefully transforms into a horizontally scrollable tab list at the top, ensuring maximum screen real estate for the active form.
     - **Smooth Transitions**: Utilizes `framer-motion` to handle performant client-side tab switching and animated content panels.
+    - **Saved Section**: A new "Saved" tab allows users to manage their unpublished drafts and saved AI trips. Resuming manual drafts loads the manual trip creator with pre-filled state, while resuming saved AI trips shows the immutable AI review layout.
 - **Zustand Feed Store & Discovery Flow (`/explore`)**:
   - **Centralized Feed State**: Managed inside `app/store/feed.store.ts` using Zustand to coordinate discovery feed items (`trips`), loading, and error states globally.
   - **Decoupled API Fetching**: Handled inside `app/services/feed.service.ts` using the secure `apiFetch` utility, completely separating HTTP fetching logic from UI layers.

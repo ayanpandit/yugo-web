@@ -218,20 +218,14 @@ export default function NotificationsDropdown() {
                         <div className="flex items-start gap-3 flex-1 min-w-0">
                           {/* Avatar */}
                           <div className="relative shrink-0">
-                            {notification.actor?.image ? (
-                              <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 overflow-hidden relative">
-                                <Image
-                                  src={notification.actor.image}
-                                  alt={actorName}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-9 h-9 rounded-full bg-green-50 text-green-700 flex items-center justify-center font-bold text-xs uppercase">
-                                {actorName.slice(0, 2)}
-                              </div>
-                            )}
+                            <div className="w-9 h-9 rounded-full bg-emerald-50 border border-gray-205 overflow-hidden relative">
+                              <Image
+                                src={notification.actor?.image || "/logo.png"}
+                                alt={actorName}
+                                fill
+                                className={cn("object-cover", !notification.actor?.image && "p-1.5")}
+                              />
+                            </div>
                             <div className="absolute -bottom-1 -right-1 w-4.5 h-4.5 bg-white rounded-full border border-gray-100 flex items-center justify-center shadow-sm">
                               {getIconForType(notification.type)}
                             </div>

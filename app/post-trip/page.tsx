@@ -32,6 +32,7 @@ export default function PostTripPage() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [publishLoading, setPublishLoading] = useState(false);
+  const [isResumedDraft, setIsResumedDraft] = useState(false);
 
   // Manual store methods
   const {
@@ -55,6 +56,43 @@ export default function PostTripPage() {
       if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     };
   }, [fetchDrafts]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const draftId = searchParams.get("draftId");
+      const mode = searchParams.get("mode");
+      if (draftId && mode) {
+        setIsResumedDraft(true);
+        const loadDraftById = async () => {
+          try {
+            setAiLoading(true);
+            const res = await apiFetch(`/api/v1/generate/${draftId}`);
+            if (res.ok) {
+              const result = await res.json();
+              const tripData = result.data?.[0];
+              if (tripData) {
+                if (mode === "manual") {
+                  loadDraft(tripData);
+                  setCreationMode("manual");
+                } else if (mode === "ai") {
+                  setAiItinerary(tripData.response);
+                  setGenerationId(tripData.generationId);
+                  setCreationMode("ai");
+                  setAiState("review");
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Failed to load saved draft:", err);
+          } finally {
+            setAiLoading(false);
+          }
+        };
+        loadDraftById();
+      }
+    }
+  }, [loadDraft]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -157,13 +195,9 @@ export default function PostTripPage() {
 
   // AI Save action (Private Completed)
   const handleAISave = () => {
-    showToast("Expedition saved successfully to your dashboard!");
+    showToast("Expedition saved successfully to your Saved dashboard!");
     setTimeout(() => {
-      if (user?.username) {
-        router.push(`/profile/${user.username}`);
-      } else {
-        router.push("/dashboard");
-      }
+      router.push("/settings?tab=saved");
     }, 1500);
   };
 
@@ -433,12 +467,14 @@ export default function PostTripPage() {
 
             {aiState === "review" && aiItinerary && (
               <div className="space-y-6">
-                <button
-                  onClick={() => setAiState("form")}
-                  className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#006A4E] transition-colors"
-                >
-                  <ChevronLeft size={16} /> Re-configure AI Parameters
-                </button>
+                {!isResumedDraft && (
+                  <button
+                    onClick={() => setAiState("form")}
+                    className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#006A4E] transition-colors"
+                  >
+                    <ChevronLeft size={16} /> Re-configure AI Parameters
+                  </button>
+                )}
 
                 <AIReview 
                   itinerary={aiItinerary} 

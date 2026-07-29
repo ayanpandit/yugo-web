@@ -46,15 +46,6 @@ export default function SearchPage() {
     };
   }, []);
 
-  const getInitials = (name: string | null, username: string) => {
-    const displayName = name || username;
-    const parts = displayName.split(" ");
-    if (parts.length > 1) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return displayName.slice(0, 2).toUpperCase();
-  };
-
   return (
     <DashboardLayout>
       <div className="space-y-8 pb-10 max-w-4xl mx-auto">
@@ -133,19 +124,13 @@ export default function SearchPage() {
                       className="flex items-center gap-4 bg-white border border-gray-100 hover:border-green-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
                     >
                       <div className="relative shrink-0">
-                        {user.image ? (
-                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 relative">
-                            <img
-                              src={user.image}
-                              alt={user.name || user.username}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-green-50 text-green-700 flex items-center justify-center font-bold text-sm">
-                            {getInitials(user.name, user.username)}
-                          </div>
-                        )}
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-50 border border-gray-100 relative">
+                          <img
+                            src={user.image || "/logo.png"}
+                            alt={user.name || user.username}
+                            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-200 ${!user.image ? 'p-2' : ''}`}
+                          />
+                        </div>
                       </div>
                       
                       <div className="min-w-0 flex-1">

@@ -42,17 +42,13 @@ export default function FeedCard({ trip, onViewDetails, onToggleLike }: FeedCard
     : "Price on Request";
 
   const creatorUsername = trip.creator.username || "Anonymous Traveler";
-  const creatorAvatar = trip.creator.image ? (
+  const creatorAvatar = (
     <img
-      src={trip.creator.image}
+      src={trip.creator.image || "/logo.png"}
       alt={creatorUsername}
-      className="w-full h-full object-cover rounded-full"
+      className={cn("w-full h-full object-cover rounded-full bg-emerald-50", !trip.creator.image && "p-1.5")}
       loading="lazy"
     />
-  ) : (
-    <div className="w-full h-full rounded-full bg-green-100 flex items-center justify-center font-bold text-green-700 uppercase text-[10px]">
-      {creatorUsername.charAt(0)}
-    </div>
   );
 
   return (

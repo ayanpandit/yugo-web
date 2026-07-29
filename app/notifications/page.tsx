@@ -252,20 +252,14 @@ export default function NotificationsPage() {
                       <div className="flex items-start gap-4 flex-1 min-w-0">
                         {/* Actor Avatar */}
                         <div className="relative shrink-0">
-                          {notification.actor?.image ? (
-                            <div className="w-11 h-11 rounded-full overflow-hidden bg-gray-100 border border-gray-200 relative">
-                              <Image
-                                src={notification.actor.image}
-                                alt={actorName}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-11 h-11 rounded-full bg-green-50 text-green-700 flex items-center justify-center font-bold text-sm uppercase">
-                              {actorName.slice(0, 2)}
-                            </div>
-                          )}
+                          <div className="w-11 h-11 rounded-full overflow-hidden bg-emerald-50 border border-gray-200 relative">
+                            <Image
+                              src={notification.actor?.image || "/logo.png"}
+                              alt={actorName}
+                              fill
+                              className={cn("object-cover", !notification.actor?.image && "p-2")}
+                            />
+                          </div>
                           <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white rounded-full border border-gray-100 flex items-center justify-center shadow-sm">
                             {getIconForType(notification.type)}
                           </div>

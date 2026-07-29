@@ -126,16 +126,12 @@ export function ProfileHeader({
                   <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center text-[10px] sm:text-xs text-green-600 font-bold animate-pulse">
                     <span>Uploading...</span>
                   </div>
-                ) : user?.image ? (
-                  <img
-                    src={user.image}
-                    alt={user.name || user.username}
-                    className="w-full h-full rounded-full object-cover"
-                  />
                 ) : (
-                  <div className="w-full h-full rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl sm:text-4xl md:text-5xl shadow-inner select-none font-bold text-green-700">
-                    {getInitial()}
-                  </div>
+                  <img
+                    src={user?.image || "/logo.png"}
+                    alt={user?.name || user?.username}
+                    className={`w-full h-full rounded-full object-cover bg-emerald-50 ${!user?.image ? 'p-3 sm:p-4 md:p-6' : ''}`}
+                  />
                 )}
               </div>
             </div>
